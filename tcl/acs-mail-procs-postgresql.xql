@@ -57,15 +57,15 @@
  
 <fullquery name="acs_mail_content_new.acs_mail_content_new">      
       <querytext>
-      FIX ME PLSQL
+--      FIX ME PLSQL
 
-        begin
-            :1 := acs_mail_gc_object__new (
-                gc_object_id => :object_id,
-                creation_user => :creation_user,
-                creation_ip => :creation_ip
-            );
-        end;
+--        begin
+        select acs_mail_gc_object__new (
+            gc_object_id => :object_id,
+            creation_user => :creation_user,
+            creation_ip => :creation_ip
+        );
+--        end;
     
       </querytext>
 </fullquery>
@@ -76,20 +76,20 @@
 --      FIX ME PLSQL
 
 --        begin
-            select acs_mail_body__new (
-                body_id => :body_id,
-                body_reply_to => :body_reply_to,
-                body_from => :body_from,
-                body_date => :body_date,
-                header_message_id => :header_message_id,
-                header_reply_to => :header_reply_to,
-                header_subject => :header_subject,
-                header_from => :header_from,
-                header_to => :header_to,
-                content_object_id => :content_object_id,
-                creation_user => :creation_user,
-                creation_ip => :creation_ip
-            );
+    select acs_mail_body__new (
+        body_id => :body_id,
+        body_reply_to => :body_reply_to,
+        body_from => :body_from,
+        body_date => :body_date,
+        header_message_id => :header_message_id,
+        header_reply_to => :header_reply_to,
+        header_subject => :header_subject,              
+        header_from => :header_from,
+        header_to => :header_to,
+        content_object_id => :content_object_id,
+        creation_user => :creation_user,
+        creation_ip => :creation_ip
+    );
 --        end;
     
       </querytext>
