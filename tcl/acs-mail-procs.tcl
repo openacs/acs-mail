@@ -11,42 +11,56 @@ ad_library {
 # base64 encode a string
 
 proc acs_mail_base64_encode {string} {
-	set i 0
-    foreach char {A B C D E F G H I J K L M N O P Q R S T U V W X Y Z \
-	      a b c d e f g h i j k l m n o p q r s t u v w x y z \
-	      0 1 2 3 4 5 6 7 8 9 + /} {
-	  set base64_en($i) $char
-	  incr i
-    }
+	if [nsv_get acs_mail ns_uuencode_works_p] {
+		# ns_uuencode works - use it
+
+		# split it into chunks of 48 chars and then encode it
+		set length [string length $string]
+		for { set i 0 } { [expr $i + 48 ] < $length } { incr i 48 } {
+			append result "[ns_uuencode [string range $string $i [expr $i+47]]]\n"
+		}
+		append result [ns_uuencode [string range $string $i end]]
+	} else {
+		# ns_uuencode doesn't work - use the tcl version
+
+		set i 0
+		foreach char {A B C D E F G H I J K L M N O P Q R S T U V W X Y Z \
+				a b c d e f g h i j k l m n o p q r s t u v w x y z \
+				0 1 2 3 4 5 6 7 8 9 + /} {
+			set base64_en($i) $char
+			incr i
+		}
     
-    set result {}
-    set state 0
-    set length 0
-    foreach {c} [split $string {}] {
-		if { $length >= 60 } {
-			append result "\n"
-			set length 0
-		}
-		scan $c %c x
-		switch [incr state] {
-			1 {	append result $base64_en([expr {($x >>2) & 0x3F}]) }
-			2 { append result \
-					$base64_en([expr {(($old << 4) & 0x30) | (($x >> 4) & 0xF)}]) }
-			3 { append result \
-					$base64_en([expr {(($old << 2) & 0x3C) | (($x >> 6) & 0x3)}])
-			append result $base64_en([expr {($x & 0x3F)}])
+		set result {}
+		set state 0
+		set length 0
+		foreach {c} [split $string {}] {
+			if { $length >= 60 } {
+				append result "\n"
+				set length 0
+			}
+			scan $c %c x
+			switch [incr state] {
+				1 {	append result $base64_en([expr {($x >>2) & 0x3F}]) }
+				2 { append result \
+						$base64_en([expr {(($old << 4) & 0x30) | (($x >> 4) & 0xF)}]) }
+				3 { append result \
+						$base64_en([expr {(($old << 2) & 0x3C) | (($x >> 6) & 0x3)}])
+				append result $base64_en([expr {($x & 0x3F)}])
+				incr length
+				set state 0}
+			}
+			set old $x
 			incr length
-			set state 0}
 		}
-		set old $x
-		incr length
-    }
-    set x 0
-    switch $state {
-		0 { # OK }
-		1 { append result $base64_en([expr {(($old << 4) & 0x30)}])== }
-		2 { append result $base64_en([expr {(($old << 2) & 0x3C)}])=  }
-    }
+		set x 0
+		switch $state {
+			0 { # OK }
+			1 { append result $base64_en([expr {(($old << 4) & 0x30)}])== }
+			2 { append result $base64_en([expr {(($old << 2) & 0x3C)}])=  }
+		}
+	}
+
     return $result
 }
 

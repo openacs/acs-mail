@@ -8,7 +8,7 @@
 
 begin
   return content_item__new(
-    'acs-mail message $body_id', -- new__name
+    'acs-mail message $body_id'::varchar, -- new__name
     null,                     -- new__parent_id
     null,                     -- new__item_id
     null,                     -- new__locale
