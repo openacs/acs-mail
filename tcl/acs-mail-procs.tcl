@@ -240,7 +240,7 @@ ad_proc -private acs_mail_encode_content {
 						# that we will then uuencode
 						set file [ns_tmpnam]
 						db_blob_get_file copy_blob_to_file "
-						    select r.content, istorage_type 
+						    select r.content, i.storage_type 
 						    from cr_revisions r, cr_items i 
 						    where r.revision_id = $revision_id and
 						          r.item_id = i.item_id " -file $file
