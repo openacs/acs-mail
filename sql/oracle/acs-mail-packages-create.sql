@@ -17,7 +17,9 @@ as
   creation_date in acs_objects.creation_date%TYPE default sysdate,
   creation_user in acs_objects.creation_user%TYPE default null,
   creation_ip   in acs_objects.creation_ip%TYPE   default null,
-  context_id    in acs_objects.context_id%TYPE    default null
+  context_id    in acs_objects.context_id%TYPE    default null,
+  title         in acs_objects.title%TYPE         default null,
+  package_id    in acs_objects.package_id%TYPE    default null
  ) return acs_objects.object_id%TYPE;
 
  procedure del (
@@ -47,7 +49,8 @@ as
   creation_date     in acs_objects.creation_date%TYPE default sysdate,
   creation_user     in acs_objects.creation_user%TYPE default null,
   creation_ip       in acs_objects.creation_ip%TYPE   default null,
-  context_id        in acs_objects.context_id%TYPE    default null
+  context_id        in acs_objects.context_id%TYPE    default null,
+  package_id        in acs_objects.package_id%TYPE    default null
  ) return acs_objects.object_id%TYPE;
 
  procedure del (
@@ -93,7 +96,8 @@ as
   creation_date  in acs_objects.creation_date%TYPE             default sysdate,
   creation_user  in acs_objects.creation_user%TYPE             default null,
   creation_ip    in acs_objects.creation_ip%TYPE               default null,
-  context_id     in acs_objects.context_id%TYPE                default null
+  context_id     in acs_objects.context_id%TYPE                default null,
+  package_id     in acs_objects.package_id%TYPE                default null
  ) return acs_objects.object_id%TYPE;
 
  procedure del (
@@ -128,7 +132,8 @@ as
   creation_date   in acs_objects.creation_date%TYPE default sysdate,
   creation_user   in acs_objects.creation_user%TYPE default null,
   creation_ip     in acs_objects.creation_ip%TYPE   default null,
-  object_type     in acs_objects.object_type%TYPE   default 'acs_mail_link'
+  object_type     in acs_objects.object_type%TYPE   default 'acs_mail_link',
+  package_id      in acs_objects.package_id%TYPE    default null
  ) return acs_objects.object_id%TYPE;
 
  procedure del (
@@ -154,7 +159,7 @@ as
   creation_user in acs_objects.creation_user%TYPE default null,
   creation_ip   in acs_objects.creation_ip%TYPE   default null,
   context_id    in acs_objects.context_id%TYPE    default null,
-  title         in acs_objects.title%TYPE    default null
+  title         in acs_objects.title%TYPE         default null,
   package_id    in acs_objects.package_id%TYPE    default null
  ) return acs_objects.object_id%TYPE
  is
