@@ -12,7 +12,7 @@ begin
         object_type => 'acs_mail_queue_message',
         pretty_name => 'Queued Message',
         pretty_plural => 'Queued Messages',
-        table_name => 'ACS_MESSAGES_QUEUE_MESSAGE',
+        table_name => 'ACS_MESSAGES_QUEUE_MESSAGES',
         id_column => 'MESSAGE_ID',
         name_method => 'ACS_OBJECT.DEFAULT_NAME'
     );

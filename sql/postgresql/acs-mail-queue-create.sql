@@ -11,7 +11,7 @@ select acs_object_type__create_type (
     'Queued Message',
     'Queued Messages',
     'acs_mail_link',
-    'acs_mail_queue_message',
+    'acs_mail_queue_messages',
     'message_id',
     null,
     'f',
