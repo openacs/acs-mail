@@ -251,6 +251,9 @@ create table acs_mail_links (
         constraint acs_mail_links_body_id_fk references acs_mail_bodies
 );
 
+--RI Index
+create index acs_mail_links_body_id_idx ON acs_mail_links(body_id);
+
 
 -- API -----------------------------------------------------------------
 

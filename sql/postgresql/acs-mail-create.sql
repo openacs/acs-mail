@@ -260,6 +260,9 @@ create table acs_mail_links (
 				 references acs_mail_bodies on delete cascade
 );
 
+-- RI Index
+create index acs_mail_links_body_id_idx ON acs_mail_links(body_id);
+
 
 -- API -----------------------------------------------------------------
 
