@@ -39,12 +39,12 @@ create table acs_mail_queue_incoming (
 
 create table acs_mail_queue_outgoing (
     message_id		integer
-					constraint acs_mail_queue_out_mlid_pk 
-					primary key
 					constraint acs_mail_queue_out_mlid_fk
 					references acs_mail_queue_messages on delete cascade,
     envelope_from	text,
-    envelope_to		text
+    envelope_to		text,
+	constraint acs_mail_queue_out_pk
+	primary key (message_id, envelope_to)
 );
 
 -- API -----------------------------------------------------------------
