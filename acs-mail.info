@@ -5,6 +5,7 @@
     <package-name>ACS Mail</package-name>
     <pretty-plural>ACS Mail Services</pretty-plural>
     <singleton-p>t</singleton-p>
+    <initial-install-p>t</initial-install-p>
 
     <version name="4.1.1" url="http://www.arsdigita.com/acs-repository/download/apm/acs-mail-4.1.1.apm">
     <database-support>
