@@ -232,7 +232,7 @@ ad_proc -private acs_mail_encode_content {
 					# so we can uuencode it if necessary.
 					# We'll use the mime type to decide
 					
-					if { [string first $v_content_type "text/html"] == 0 } {
+					if { [string first "text" $v_content_type] == 0 } {
 						ns_log Notice "acs-mail: encode: plain content"
 						set encoded_content "$content"
 					} else {
