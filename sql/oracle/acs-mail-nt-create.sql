@@ -117,8 +117,8 @@ as
  is
 	cursor c_expanded_cur is 
 		   select email from parties p 
-			where party_id in (select member_id from group_approved_member_map 
-								where group_id = p_party_to);
+			where p.party_id in (select member_id from group_approved_member_map 
+								where group_id = party_to);
 	c_request_row	c_expanded_cur%ROWTYPE;
 	v_header_from	acs_mail_bodies.header_from%TYPE;
 	v_header_to		acs_mail_bodies.header_to%TYPE;
@@ -136,21 +136,10 @@ as
 	-- create a mail body with empty content
 
 	v_body_id := acs_mail_body.new (
-		null,				   -- p_body_id
-		null,				   -- p_body_reply_to
-		party_from,			   -- p_body_from
-		sysdate,			   -- p_body_date
-		null,				   -- p_header_message_id
-		null,				   -- p_header_reply_to
-		subject,			   -- p_header_subject
-		null,				   -- p_header_from
-		null,				   -- p_header_to
-		null,				   -- p_content_item_id
-		'acs_mail_body',	   -- p_object_type
-		sysdate,			   -- p_creation_date
-		party_from,			   -- p_creation_user
-		null,				   -- p_creation_ip
-		null				   -- p_context_id
+		body_from => party_from,
+		body_date => sysdate,
+		header_subject => subject,
+		creation_user => party_from
 	);
 
 	-- create a CR item to stick message into
