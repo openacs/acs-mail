@@ -138,8 +138,7 @@ as
 	v_body_id := acs_mail_body.new (
 		body_from => party_from,
 		body_date => sysdate,
-		header_subject => subject,
-		creation_user => party_from
+		header_subject => subject
 	);
 
 	-- create a CR item to stick message into
@@ -162,8 +161,7 @@ as
 
 	-- queue the message
 	v_message_id := acs_mail_queue_message.new (
-		body_id       => v_body_id,
-		creation_user => party_from
+		body_id       => v_body_id
 	);
 
 	-- get the sender email address
