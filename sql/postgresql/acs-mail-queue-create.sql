@@ -49,21 +49,53 @@ create table acs_mail_queue_outgoing (
 
 -- API -----------------------------------------------------------------
 --create or replace package body acs_mail_queue_message__
-create function acs_mail_queue_message__new (integer,integer,integer,timestamptz,integer,varchar,varchar)
+create function acs_mail_queue_message__new (integer,integer,integer,timestamptz,integer,varchar,varchar,integer)
 returns integer as '
 declare
 	p_mail_link_id			alias for $1;    -- default null
-	p_body_id				alias for $2;
+	p_body_id			alias for $2;
 	p_context_id			alias for $3;    -- default null
 	p_creation_date			alias for $4;    -- default now()
 	p_creation_user			alias for $5;    -- default null
 	p_creation_ip			alias for $6;    -- default null
 	p_object_type			alias for $7;    -- default acs_mail_link
-    v_mail_link_id			acs_mail_links.mail_link_id%TYPE;
+	p_package_id			alias for $8;    -- default null
+	v_mail_link_id			acs_mail_links.mail_link_id%TYPE;
 begin
     v_mail_link_id := acs_mail_link__new (
 		p_mail_link_id,			-- mail_link_id 
-		p_body_id,				-- body_id 
+		p_body_id,			-- body_id 
+		p_context_id,			-- context_id 
+		p_creation_date,		-- creation_date 
+		p_creation_user,		-- creation_user 
+		p_creation_ip,			-- creation_ip 
+		p_object_type,			-- object_type
+		p_package_id			-- package_id
+    );
+
+    insert into acs_mail_queue_messages 
+	 ( message_id )
+    values 
+	 ( v_mail_link_id );
+
+    return v_mail_link_id;
+end;' language 'plpgsql';
+
+create function acs_mail_queue_message__new (integer,integer,integer,timestamptz,integer,varchar,varchar)
+returns integer as '
+declare
+	p_mail_link_id			alias for $1;    -- default null
+	p_body_id			alias for $2;
+	p_context_id			alias for $3;    -- default null
+	p_creation_date			alias for $4;    -- default now()
+	p_creation_user			alias for $5;    -- default null
+	p_creation_ip			alias for $6;    -- default null
+	p_object_type			alias for $7;    -- default acs_mail_link
+	v_mail_link_id			acs_mail_links.mail_link_id%TYPE;
+begin
+    v_mail_link_id := acs_mail_link__new (
+		p_mail_link_id,			-- mail_link_id 
+		p_body_id,			-- body_id 
 		p_context_id,			-- context_id 
 		p_creation_date,		-- creation_date 
 		p_creation_user,		-- creation_user 

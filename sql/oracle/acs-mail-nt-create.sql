@@ -37,7 +37,8 @@ as
 	expand_group	in char				default 'f',
 	subject			in acs_mail_bodies.header_subject%TYPE,
 	message			in varchar2,
-	max_retries		in integer			default 0
+	max_retries		in integer			default 0,
+	package_id		in acs_objects.package_id%TYPE	default null
  ) return acs_mail_queue_messages.message_id%TYPE;
 
 -- /** acs_mail_nt.cancel_request
@@ -112,7 +113,8 @@ as
 	expand_group	in char				default 'f',
 	subject			in acs_mail_bodies.header_subject%TYPE,
 	message			in varchar2,
-	max_retries		in integer			default 0
+	max_retries		in integer			default 0,
+	package_id		in acs_objects.package_id%TYPE	default null
  ) return acs_mail_queue_messages.message_id%TYPE
  is
 	cursor c_expanded_cur is 
@@ -164,7 +166,8 @@ as
 		body_from => party_from,
 		body_date => sysdate,
 		header_subject => subject,
-		creation_user => v_creation_user
+		creation_user => v_creation_user,
+		package_id => package_id
 	);
 
 	-- create a CR item to stick message into
@@ -172,8 +175,9 @@ as
 
 	v_item_id := content_item.new (
 		name  => 'acs-mail message' || v_body_id,	
-        title => subject,
-        text  => message
+        	title => subject,
+        	text  => message,
+		package_id => package_id
 	);
 
 	-- content_item__new makes a CR revision. We need to get that revision
@@ -188,7 +192,8 @@ as
 	-- queue the message
 	v_message_id := acs_mail_queue_message.new (
 		body_id       => v_body_id,
-		creation_user => v_creation_user
+		creation_user => v_creation_user,
+		package_id    => package_id
 	);
 
 	-- now put the message into the outgoing queue

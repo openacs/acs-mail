@@ -1,52 +1,27 @@
---
--- packages/acs-mail/sql/acs-mail-queue-create.sql
---
--- @author John Prevost <jmp@arsdigita.com>
--- @creation-date 2001-01-08
--- @cvs-id $Id$
---
+update acs_objects
+set title = 'ACS Mail Object ' || object_id
+where object_type = 'acs_mail_gc_object';
 
-begin
-    acs_object_type.create_type (
-        supertype => 'acs_mail_link',
-        object_type => 'acs_mail_queue_message',
-        pretty_name => 'Queued Message',
-        pretty_plural => 'Queued Messages',
-        table_name => 'ACS_MESSAGES_QUEUE_MESSAGES',
-        id_column => 'MESSAGE_ID',
-        name_method => 'ACS_OBJECT.DEFAULT_NAME'
-    );
-end;
-/
-show errors
+update acs_objects
+set title = (select substr(header_subject,1,1000)
+             from acs_mail_bodies
+             where body_id = object_id)
+where object_type = 'acs_mail_body';
 
-create table acs_mail_queue_messages (
-    message_id integer
-        constraint acs_mail_queue_ml_id_pk primary key
-        constraint acs_mail_queue_ml_id_fk references acs_mail_links
-		on delete cascade
-);
+update acs_objects
+set title = 'ACS Mail Multipart Object ' || object_id
+where object_type = 'acs_mail_multipart';
 
-create table acs_mail_queue_incoming (
-    message_id integer
-        constraint acs_mail_queue_in_mlid_pk primary key
-        constraint acs_mail_queue_in_mlid_fk
-            references acs_mail_queue_messages on delete cascade,
-    envelope_from varchar2(4000),
-    envelope_to varchar2(4000)
-);
+update acs_objects
+set title = 'ACS Mail Message ' || object_id
+where object_type = 'acs_mail_link';
 
-create table acs_mail_queue_outgoing (
-    message_id integer
-        constraint acs_mail_queue_out_mlid_fk
-            references acs_mail_queue_messages on delete cascade,
-    envelope_from varchar2(4000),
-    envelope_to		varchar2(1500),
-	constraint acs_mail_queue_out_pk
-	primary key (message_id, envelope_to)
-);
+update acs_objects
+set title = 'Queued Message ' || object_id
+where object_type = 'acs_mail_queue_message';
 
--- API -----------------------------------------------------------------
+
+@@ ../acs-mail-packages-create.sql
 
 create or replace package acs_mail_queue_message
 as
@@ -116,10 +91,4 @@ end acs_mail_queue_message;
 /
 show errors
 
-
--- Needs:
---   Incoming:
---     A way to say "okay, I've accepted this one, go ahead and delete"
---   Outgoing:
---     A way to say "send this message to this person from this person"
---     A way to say "send this message to these people from this person"
+@@ ../acs-mail-nt-create.sql

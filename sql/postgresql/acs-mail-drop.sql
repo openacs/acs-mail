@@ -12,6 +12,8 @@
 
 drop function acs_mail_queue_message__new (integer,integer,
 	 integer,timestamptz,integer,varchar,varchar);
+drop function acs_mail_queue_message__new (integer,integer,
+	 integer,timestamptz,integer,varchar,varchar,integer);
 drop function acs_mail_queue_message__delete (integer);
 
 drop table acs_mail_queue_incoming;
@@ -26,9 +28,13 @@ select acs_object_type__drop_type (
 
 drop function acs_mail_gc_object__new (integer,varchar,timestamptz,integer,
 	 varchar,integer);
+drop function acs_mail_gc_object__new (integer,varchar,timestamptz,integer,
+	 varchar,integer,integer);
 drop function acs_mail_gc_object__delete(integer);
 drop function acs_mail_body__new (integer,integer,integer,timestamptz,varchar,
 	 varchar,text,text,text,integer,varchar,date,integer,varchar,integer);
+drop function acs_mail_body__new (integer,integer,integer,timestamptz,varchar,
+	 varchar,text,text,text,integer,varchar,date,integer,varchar,integer,integer);
 drop function acs_mail_body__delete(integer);
 drop function acs_mail_body__body_p(integer);
 drop function acs_mail_body__clone (integer,integer,varchar,timestamptz,
@@ -36,11 +42,15 @@ drop function acs_mail_body__clone (integer,integer,varchar,timestamptz,
 drop function acs_mail_body__set_content_object (integer,integer);
 drop function acs_mail_multipart__new (integer,varchar,varchar,
 	 timestamptz,integer,varchar,integer);
+drop function acs_mail_multipart__new (integer,varchar,varchar,
+	 timestamptz,integer,varchar,integer,integer);
 drop function acs_mail_multipart__delete (integer);
 drop function acs_mail_multipart__multipart_p (integer);
 drop function acs_mail_multipart__add_content (integer,integer);
 drop function acs_mail_link__new (integer,integer,integer,timestamptz,
 	 integer,varchar,varchar);
+drop function acs_mail_link__new (integer,integer,integer,timestamptz,
+	 integer,varchar,varchar,integer);
 drop function acs_mail_link__delete (integer);
 drop function acs_mail_link__link_p (integer);
 
