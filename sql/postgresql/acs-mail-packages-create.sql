@@ -8,7 +8,7 @@
 
 -- Package Implementations ---------------------------------------------
 
-create function acs_mail_gc_object__new (integer,varchar,timestamp,integer,varchar,integer)
+create function acs_mail_gc_object__new (integer,varchar,timestamp with time zone,integer,varchar,integer)
 returns integer as '
 declare
     p_gc_object_id  alias for $1;    -- default null
@@ -51,7 +51,7 @@ end;
 -- first create a CR item.
 -- then call acs_mail_body__new with the CR item's item_id
 
-create function acs_mail_body__new (integer,integer,integer,timestamp,varchar,varchar,text,text,text,integer,varchar,date,integer,varchar,integer)
+create function acs_mail_body__new (integer,integer,integer,timestamp with time zone,varchar,varchar,text,text,text,integer,varchar,date,integer,varchar,integer)
 returns integer as ' 
 declare
 	p_body_id			alias for $1;    -- default null
@@ -136,7 +136,7 @@ begin
 end;
 ' language 'plpgsql';
 
-create function acs_mail_body__clone (integer,integer,varchar,timestamp,
+create function acs_mail_body__clone (integer,integer,varchar,timestamp with time zone,
 integer,varchar,integer) 
 returns integer as '
 declare 
@@ -296,7 +296,7 @@ end;
 --end acs_mail_multipart;
 
 --create or replace package body acs_mail_link__
-create function acs_mail_link__new (integer,integer,integer,timestamp,integer,varchar,varchar)
+create function acs_mail_link__new (integer,integer,integer,timestamp with time zone,integer,varchar,varchar)
 returns integer as '
 declare
 	p_mail_link_id			alias for $1;    -- default null
