@@ -11,7 +11,7 @@ select content_item__new(
     null::integer,                     -- new__parent_id
     null::integer,                     -- new__item_id
     null::varchar,                     -- new__locale
-    now()::timestamp,                    -- new__creation_date
+    current_timestamp,                    -- new__creation_date
     :creation_user::integer,           -- new__creation_user
     null::integer,                     -- new__context_id
     :creation_ip::varchar,             -- new__creation_ip
