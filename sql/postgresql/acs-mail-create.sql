@@ -176,7 +176,7 @@ create table acs_mail_bodies (
     body_from			integer
 						constraint acs_mail_bodies_body_from_fk
 						references parties on delete set null,
-    body_date			timestamp,
+    body_date			timestamptz,
     header_message_id	varchar(1000)
 						constraint acs_mail_bodies_h_m_id_un 
 						unique
@@ -198,6 +198,11 @@ create table acs_mail_bodies (
 						constraint acs_mail_bodies_content_iid_fk
 						references acs_objects on delete cascade
 );
+
+-- RI Indexes 
+create index acs_mail_bodies_item_id_idx ON acs_mail_bodies(content_item_id);
+create index acs_mail_bodies_body_from_idx ON acs_mail_bodies(body_from);
+create index acs_mail_bodies_body_reply_idx ON acs_mail_bodies(body_reply_to);
 
 create table acs_mail_body_headers (
     body_id				integer
@@ -237,7 +242,10 @@ create table acs_mail_multipart_parts (
         primary key (multipart_id, sequence_number)
 );
 
-  -- Mail Links
+--RI Index
+create index acs_mail_mpp_cr_item_id_idx ON acs_mail_multipart_parts(content_item_id);
+
+-- Mail Links
 
 create table acs_mail_links (
     mail_link_id integer
@@ -251,6 +259,9 @@ create table acs_mail_links (
 				 constraint acs_mail_links_body_id_fk 
 				 references acs_mail_bodies on delete cascade
 );
+
+-- RI Index
+create index acs_mail_links_body_id_idx ON acs_mail_links(body_id);
 
 
 -- API -----------------------------------------------------------------
