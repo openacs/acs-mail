@@ -62,7 +62,7 @@ as
   object_type     in acs_objects.object_type%TYPE   default 'acs_mail_link'
  ) return acs_objects.object_id%TYPE;
 
- procedure delete (
+ procedure del (
   message_id in acs_mail_links.mail_link_id%TYPE
  );
 end acs_mail_queue_message;
@@ -99,14 +99,14 @@ as
      return v_object_id;
  end;
 
- procedure delete (
+ procedure del (
   message_id in acs_mail_links.mail_link_id%TYPE
  )
  is
  begin
      delete from acs_mail_queue_messages
-         where message_id = acs_mail_queue_message.delete.message_id;
-     acs_mail_link.delete(message_id);
+         where message_id = acs_mail_queue_message.del.message_id;
+     acs_mail_link.del(message_id);
  end;
 
 end acs_mail_queue_message;

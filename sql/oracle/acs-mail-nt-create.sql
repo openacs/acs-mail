@@ -223,7 +223,7 @@ as
  ) 
  is
  begin
-	acs_mail_queue_message.delete ( message_id );
+	acs_mail_queue_message.del ( message_id );
  end cancel_request;
 
  procedure expand_requests

@@ -36,7 +36,7 @@ drop index acs_mail_body_hdrs_body_id_idx;
 begin
     for v_rec in (select object_id from acs_objects where object_type in ('acs_mail_multipart', 'acs_mail_link', 'acs_mail_body','acs_mail_gc_object') order by object_id desc)
     loop
-        acs_object.delete(v_rec.object_id);
+        acs_object.del(v_rec.object_id);
     end loop;
 end;
 /

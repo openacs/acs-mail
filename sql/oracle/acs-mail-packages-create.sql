@@ -20,7 +20,7 @@ as
   context_id    in acs_objects.context_id%TYPE    default null
  ) return acs_objects.object_id%TYPE;
 
- procedure delete (
+ procedure del (
   gc_object_id in acs_mail_gc_objects.gc_object_id%TYPE
  );
 
@@ -50,7 +50,7 @@ as
   context_id        in acs_objects.context_id%TYPE    default null
  ) return acs_objects.object_id%TYPE;
 
- procedure delete (
+ procedure del (
   body_id in acs_mail_bodies.body_id%TYPE
  );
 
@@ -96,7 +96,7 @@ as
   context_id     in acs_objects.context_id%TYPE                default null
  ) return acs_objects.object_id%TYPE;
 
- procedure delete (
+ procedure del (
   multipart_id in acs_mail_multiparts.multipart_id%TYPE
  );
 
@@ -131,7 +131,7 @@ as
   object_type     in acs_objects.object_type%TYPE   default 'acs_mail_link'
  ) return acs_objects.object_id%TYPE;
 
- procedure delete (
+ procedure del (
   mail_link_id in acs_mail_links.mail_link_id%TYPE
  );
 
@@ -170,15 +170,15 @@ as
      return v_object_id;
  end new;
 
- procedure delete (
+ procedure del (
   gc_object_id in acs_mail_gc_objects.gc_object_id%TYPE
  )
  is
  begin
      delete from acs_mail_gc_objects
-         where gc_object_id = acs_mail_gc_object.delete.gc_object_id;
-     acs_object.delete(gc_object_id);
- end delete;
+         where gc_object_id = acs_mail_gc_object.del.gc_object_id;
+     acs_object.del(gc_object_id);
+ end del;
 
 end acs_mail_gc_object;
 /
@@ -232,13 +232,13 @@ as
      return v_object_id;
  end new;
 
- procedure delete (
+ procedure del (
   body_id in acs_mail_bodies.body_id%TYPE
  )
  is
  begin
-     acs_mail_gc_object.delete(body_id);
- end delete;
+     acs_mail_gc_object.del(body_id);
+ end del;
 
  function body_p (
   object_id in acs_objects.object_id%TYPE
@@ -349,13 +349,13 @@ as
      return v_object_id;
  end new;
 
- procedure delete (
+ procedure del (
   multipart_id in acs_mail_multiparts.multipart_id%TYPE
  )
  is
  begin
-     acs_mail_gc_object.delete(multipart_id);
- end delete;
+     acs_mail_gc_object.del(multipart_id);
+ end del;
 
  function multipart_p (
   object_id in acs_objects.object_id%TYPE
@@ -432,14 +432,14 @@ as
      return v_object_id;
  end;
 
- procedure delete (
+ procedure del (
   mail_link_id in acs_mail_links.mail_link_id%TYPE
  )
  is
  begin
      delete from acs_mail_links
-         where mail_link_id = acs_mail_link.delete.mail_link_id;
-     acs_object.delete(mail_link_id);
+         where mail_link_id = acs_mail_link.del.mail_link_id;
+     acs_object.del(mail_link_id);
  end;
 
  function link_p (
