@@ -19,3 +19,4 @@ create table acs_mail_queue_outgoing (
 insert into acs_mail_queue_outgoing select * from acs_mail_o_tmp;
 
 drop table acs_mail_o_tmp;
+

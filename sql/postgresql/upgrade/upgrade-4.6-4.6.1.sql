@@ -19,3 +19,9 @@ create table acs_mail_queue_outgoing (
 insert into acs_mail_queue_outgoing select * from acs_mail_o_tmp;
 
 drop table acs_mail_o_tmp;
+
+-- RI Index 
+create index acs_mail_bodies_item_id_idx ON acs_mail_bodies(content_item_id);
+create index acs_mail_bodies_body_from_idx ON acs_mail_bodies(body_from);
+create index acs_mail_bodies_body_reply_idx ON acs_mail_bodies(body_reply_to);
+create index acs_mail_mpp_cr_item_id_idx ON acs_mail_multipart_parts(content_item_id);
