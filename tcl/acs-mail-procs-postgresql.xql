@@ -7,18 +7,18 @@
 <querytext>
 
 select content_item__new(
-    'acs-mail message $body_id', -- new__name
-    null,                     -- new__parent_id
-    null,                     -- new__item_id
-    null,                     -- new__locale
-    now(),                    -- new__creation_date
-    :creation_user,           -- new__creation_user
-    null,                     -- new__context_id
-    :creation_ip,             -- new__creation_ip
-    'content_item',           -- new__item_subtype
-    'content_revision',       -- new__content_type
-    :header_subject,          -- new__title
-    null,                     -- new__description
+    'acs-mail message $body_id'::varchar, -- new__name
+    null::integer,                     -- new__parent_id
+    null::integer,                     -- new__item_id
+    null::varchar,                     -- new__locale
+    now()::timestamp,                    -- new__creation_date
+    :creation_user::integer,           -- new__creation_user
+    null::integer,                     -- new__context_id
+    :creation_ip::varchar,             -- new__creation_ip
+    'content_item'::varchar,           -- new__item_subtype
+    'content_revision'::varchar,       -- new__content_type
+    :header_subject::varchar,          -- new__title
+    null::varchar,                     -- new__description
     :content_type,            -- new__mime_type
     :nls_language,            -- new__nls_language
     :content,                 -- new__text
@@ -136,14 +136,6 @@ where r.revision_id = $revision_id and
 </querytext>
 </fullquery>
 
-
-
-<fullquery name="acs_mail_content_new.acs_mail_content_new">      
-<querytext>
-</querytext>
-</fullquery>
-
-
 <fullquery name="acs_mail_content_new.acs_mail_content_new">      
 <querytext>
 
@@ -160,7 +152,6 @@ select acs_mail_gc_object__new (
 </fullquery>
 
  
-
 <fullquery name="acs_mail_body_new.acs_mail_body_new">      
 <querytext>
 
