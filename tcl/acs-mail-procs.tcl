@@ -366,7 +366,7 @@ ad_proc -private acs_mail_body_to_output_format {
             where body_id = :body_id
     }
     set headers [ns_set new]
-    ns_set put $headers "Message-Id" $header_message_id
+    ns_set put $headers "Message-Id" "<$header_message_id>"
 	# taking these out because they are redundant and 
 	# could conflict with the values in acs_mail_queue_outgoing
 #    if ![string equal $header_to ""] {
