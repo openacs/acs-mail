@@ -363,7 +363,7 @@ set content_item_id [db_string create_html_item "
         ...
         'text/html',                   -- mime_type
         ...
-        'HTML <b>message</b> content', -- text
+        'HTML &lt;b&gt;message&lt;/b&gt; content', -- text
         ...
 
     )
@@ -450,7 +450,7 @@ db_dml outgoing_queue $sql_string
 		addresses'. </li>
 
 		<li>The tcl procedure that sends out the mail
-		<b>acs_mail_process_queue</b> calls a procedure
+		(<b>acs_mail_process_queue</b>) calls a procedure
 		<b>acs_mail_body_to_output_format</b> that sets up the parameters
 		to call ns_sendmail. This proc gets the from and to address from
 		acs_mail_bodies. <b>acs_mail_process_queue</b> then overwrites the
@@ -458,7 +458,7 @@ db_dml outgoing_queue $sql_string
 		envelope_to in the acs_mail_queue_outgoing table. So, if you supply
 		the from and to address in acs_mail_bodies, they get overwritten by
 		whatever is in acs_mail_queue_outgoing. (Actually it's a little
-		more complicated than that because acs_mail_body_to_output_format
+		more complicated than that because <b>acs_mail_body_to_output_format</b>
 		also adds the addresses as Headers in the 5th param to ns_sendmail,
 		so you could get duplicate To: and From: headers. <b>Bottom line</b>:
 		Don't fill in the To: and From: fields in acs_mail_bodies. Instead,
@@ -476,7 +476,7 @@ db_dml outgoing_queue $sql_string
     <address><a href="mailto:vkurup@massmed.org">Vinod Kurup</a></address>
 <!-- Created: Fri Aug 10 01:04:56 EDT 2001 -->
 <!-- hhmts start -->
-Last modified: Fri Aug 10 21:46:41 EDT 2001
+Last modified: Thu Sep  6 16:06:38 EDT 2001
 <!-- hhmts end -->
   </body>
 </html>
