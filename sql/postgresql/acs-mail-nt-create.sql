@@ -27,20 +27,19 @@
 --    @return The id of the new request
 -- */
 
-create or replace function acs_mail_nt__post_request(integer,integer,boolean,varchar,text,integer,integer)
+create function acs_mail_nt__post_request(integer,integer,boolean,varchar,text,integer)
 returns integer as '
 declare
 	p_party_from		alias for $1;
-	p_party_to		alias for $2;
+	p_party_to			alias for $2;
 	p_expand_group		alias for $3;	-- default ''f''
-	p_subject		alias for $4;
-	p_message		alias for $5;
+	p_subject			alias for $4;
+	p_message			alias for $5;
 	p_max_retries		alias for $6;	-- default 0
-	p_package_id		alias for $7;	-- default null
 	v_header_from		acs_mail_bodies.header_from%TYPE;
-	v_header_to		acs_mail_bodies.header_to%TYPE;
-	v_body_id		acs_mail_bodies.body_id%TYPE;
-	v_item_id		cr_items.item_id%TYPE;
+	v_header_to			acs_mail_bodies.header_to%TYPE;
+	v_body_id			acs_mail_bodies.body_id%TYPE;
+	v_item_id			cr_items.item_id%TYPE;
 	v_revision_id		cr_revisions.revision_id%TYPE;
 	v_message_id		acs_mail_queue_messages.message_id%TYPE;
 	v_header_to_rec		record;
@@ -75,33 +74,31 @@ begin
 	-- create a mail body with empty content
 
 	select acs_mail_body__new (
-		null,			   -- p_body_id
-		null,			   -- p_body_reply_to
+		null,				   -- p_body_id
+		null,				   -- p_body_reply_to
 		p_party_from,		   -- p_body_from
-		now(),			   -- p_body_date
-		null,			   -- p_header_message_id
-		null,			   -- p_header_reply_to
-		p_subject,		   -- p_header_subject
-		null,			   -- p_header_from
-		null,			   -- p_header_to
-		null,			   -- p_content_item_id
+		now(),				   -- p_body_date
+		null,				   -- p_header_message_id
+		null,				   -- p_header_reply_to
+		p_subject,			   -- p_header_subject
+		null,				   -- p_header_from
+		null,				   -- p_header_to
+		null,				   -- p_content_item_id
 		''acs_mail_body'',	   -- p_object_type
-		now(),			   -- p_creation_date
+		now(),				   -- p_creation_date
 		v_creation_user,	   -- p_creation_user
-		null,			   -- p_creation_ip
-		null,			   -- p_context_id
-		p_package_id		   -- p_package_id
+		null,				   -- p_creation_ip
+		null				   -- p_context_id
 	) into v_body_id;
 
 	-- create a CR item to stick p_message into
 
 	select content_item__new(
-        	''acs-mail message'' || v_body_id,	-- new__name
-        	null,					-- new__parent_id
-        	p_subject,				-- new__title
-        	null,					-- new__description
-        	p_message,				-- new__text
-		p_package_id				-- new__package_id
+        ''acs-mail message'' || v_body_id,	-- new__name
+        null,					-- new__parent_id
+        p_subject,				-- new__title
+        null,					-- new__description
+        p_message				-- new__text
 	) into v_item_id;
 
 	-- content_item__new makes a CR revision. We need to get that revision
@@ -116,14 +113,13 @@ begin
 	-- queue the message
 
 	select acs_mail_queue_message__new (
-		null,				-- p_mail_link_id
-		v_body_id,			-- p_body_id
-		null,				-- p_context_id
-		now(),				-- p_creation_date
+		null,					-- p_mail_link_id
+		v_body_id,				-- p_body_id
+		null,					-- p_context_id
+		now(),					-- p_creation_date
 		v_creation_user,		-- p_creation_user
-		null,				-- p_creation_ip
-		''acs_mail_link'',		-- p_object_type
-		p_package_id			-- p_package_id
+		null,					-- p_creation_ip
+		''acs_mail_link''		-- p_object_type
 	) into v_message_id;
 
 	-- now put the message into the outgoing queue
@@ -159,27 +155,6 @@ begin
 	return v_message_id;
 end;' language 'plpgsql';
 
-create or replace function acs_mail_nt__post_request(integer,integer,boolean,varchar,text,integer)
-returns integer as '
-declare
-	p_party_from		alias for $1;
-	p_party_to		alias for $2;
-	p_expand_group		alias for $3;	-- default ''f''
-	p_subject		alias for $4;
-	p_message		alias for $5;
-	p_max_retries		alias for $6;	-- default 0
-begin
-	return acs_mail_nt__post_request(
-		p_party_from,		-- p_party_from
-		p_party_to,		-- p_party_to
-		p_expand_group,		-- p_expand_group
-		p_subject,		-- p_subject
-		p_message,		-- p_message
-		p_max_retries,		-- p_max_retries
-		null			-- p_package_id
-	);
-end;' language 'plpgsql';
-
 -- /** acs_mail_nt__post_request
 --	  * Overloaded function that
 --	  * only uses the basic params
@@ -191,42 +166,21 @@ end;' language 'plpgsql';
 --    @param message       The body of the message
 --    @return The id of the new request
 --
-create or replace function acs_mail_nt__post_request(integer,integer,varchar,text,integer)
+create function acs_mail_nt__post_request(integer,integer,varchar,text)
 returns integer as '
 declare
 	p_party_from		alias for $1;
-	p_party_to		alias for $2;
-	p_subject		alias for $3;
-	p_message		alias for $4;
-	p_package_id		alias for $5;
+	p_party_to			alias for $2;
+	p_subject			alias for $3;
+	p_message			alias for $4;
 begin
 	return acs_mail_nt__post_request(
 		p_party_from,		-- p_party_from
-		p_party_to,		-- p_party_to
-		''f'',			-- p_expand_group
-		p_subject,		-- p_subject
-		p_message,		-- p_message
-		0,			-- p_max_retries
-		p_package_id		-- p_package_id
-	);
-end;' language 'plpgsql';
-
-create or replace function acs_mail_nt__post_request(integer,integer,varchar,text)
-returns integer as '
-declare
-	p_party_from		alias for $1;
-	p_party_to		alias for $2;
-	p_subject		alias for $3;
-	p_message		alias for $4;
-begin
-	return acs_mail_nt__post_request(
-		p_party_from,		-- p_party_from
-		p_party_to,		-- p_party_to
-		''f'',			-- p_expand_group
-		p_subject,		-- p_subject
-		p_message,		-- p_message
-		0,			-- p_max_retries
-		null			-- p_package_id
+		p_party_to,			-- p_party_to
+		''f'',				-- p_expand_group
+		p_subject,			-- p_subject
+		p_message,			-- p_message
+		0					-- p_max_retries
 	);
 end;' language 'plpgsql';
 
@@ -239,7 +193,7 @@ end;' language 'plpgsql';
 --    @param request_id    Id of the request to cancel
 -- */
 
-create or replace function acs_mail_nt__cancel_request (integer)
+create function acs_mail_nt__cancel_request (integer)
 returns integer as '
 declare
 	p_message_id		alias for $1;
@@ -256,7 +210,7 @@ end;' language 'plpgsql';
 --		@author Vinod Kurup
 -- */
 
-create or replace function acs_mail_nt__expand_requests ()
+create function acs_mail_nt__expand_requests ()
 returns integer as '
 begin
 	raise EXCEPTION ''-20000: Procedure no longer supported.'';
@@ -271,7 +225,7 @@ end;' language 'plpgsql';
 --		@author Vinod Kurup
 -- */
 
-create or replace function acs_mail_nt__update_requests ()
+create function acs_mail_nt__update_requests ()
 returns integer as '
 begin
 	raise EXCEPTION ''-20000: Procedure no longer supported.'';
@@ -286,7 +240,7 @@ end;' language 'plpgsql';
 --		@author Vinod Kurup
 -- */
 
-create or replace function acs_mail_nt__process_queue (varchar,integer)
+create function acs_mail_nt__process_queue (varchar,integer)
 returns integer as '
 declare
 	p_host		alias for $1;
@@ -308,7 +262,7 @@ end;' language 'plpgsql';
 --		@author Vinod Kurup
 -- */
 
-create or replace function acs_mail_nt__schedule_process (numeric,varchar,integer)
+create function acs_mail_nt__schedule_process (numeric,varchar,integer)
 returns integer as '
 declare
 	p_interval	alias for $1;

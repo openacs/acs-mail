@@ -153,9 +153,7 @@ as
   creation_date in acs_objects.creation_date%TYPE default sysdate,
   creation_user in acs_objects.creation_user%TYPE default null,
   creation_ip   in acs_objects.creation_ip%TYPE   default null,
-  context_id    in acs_objects.context_id%TYPE    default null,
-  title         in acs_objects.title%TYPE    default null
-  package_id    in acs_objects.package_id%TYPE    default null
+  context_id    in acs_objects.context_id%TYPE    default null
  ) return acs_objects.object_id%TYPE
  is
      v_object_id acs_objects.object_id%TYPE;
@@ -166,13 +164,9 @@ as
          creation_date => creation_date,
          creation_user => creation_user,
          creation_ip => creation_ip,
-         context_id => context_id,
-         title => title,
-         package_id => package_id
+         context_id => context_id
      );
-
      insert into acs_mail_gc_objects values ( v_object_id );
-
      return v_object_id;
  end new;
 
@@ -209,36 +203,24 @@ as
   creation_date     in acs_objects.creation_date%TYPE default sysdate,
   creation_user     in acs_objects.creation_user%TYPE default null,
   creation_ip       in acs_objects.creation_ip%TYPE   default null,
-  context_id        in acs_objects.context_id%TYPE    default null,
-  package_id        in acs_objects.package_id%TYPE    default null
+  context_id        in acs_objects.context_id%TYPE    default null
  ) return acs_objects.object_id%TYPE
  is
      v_object_id         acs_objects.object_id%TYPE;
-     v_package_id        acs_objects.package_id%TYPE;
      v_header_message_id acs_mail_bodies.header_message_id%TYPE;
  begin
-     if package_id is null then
-         v_package_id := acs_object.package_id(content_item_id);
-     else
-         v_package_id := package_id;
-     end if;
-
      v_object_id := acs_mail_gc_object.new (
          gc_object_id => body_id,
          object_type => object_type,
          creation_date => creation_date,
          creation_user => creation_user,
          creation_ip => creation_ip,
-         context_id => context_id,
-         title => substr(header_subject,1,1000),
-         package_id => v_package_id
+         context_id => context_id
      );
-
      v_header_message_id :=
          nvl(header_message_id,
              sysdate || '.' || v_object_id || '@' ||
                  utl_inaddr.get_host_name || '.sddd');
-
      insert into acs_mail_bodies
          (body_id, body_reply_to, body_from, body_date, header_message_id,
           header_reply_to, header_subject, header_from, header_to,
@@ -247,7 +229,6 @@ as
          (v_object_id, body_reply_to, body_from, body_date,
           v_header_message_id, header_reply_to, header_subject, header_from,
           header_to, content_item_id);
-
      return v_object_id;
  end new;
 
@@ -295,18 +276,15 @@ as
      header_from       acs_mail_bodies.header_from%TYPE;
      header_to         acs_mail_bodies.header_to%TYPE;
      content_item_id   acs_mail_bodies.content_item_id%TYPE;
-     package_id        acs_objects.package_id%TYPE;
  begin
      select body_reply_to, body_from, body_date,
             header_reply_to, header_subject, header_from, header_to,
-            content_item_id, package_id
+            content_item_id
          into body_reply_to, body_from, body_date,
             header_reply_to, header_subject, header_from, header_to,
-            content_item_id, package_id
-         from acs_mail_bodies b, acs_objects o
-         where b.body_id = old_body_id
-         and o.object_id = b.body_id;
-
+            content_item_id
+         from acs_mail_bodies
+         where body_id = old_body_id;
      v_object_id := acs_mail_body.new (
          body_id => body_id,
          body_reply_to => body_reply_to,
@@ -321,8 +299,7 @@ as
          creation_date => creation_date,
          creation_user => creation_user,
          creation_ip => creation_ip,
-         context_id => context_id,
-         package_id => package_id
+         context_id => context_id
      );
      return v_object_id;
  end clone;
@@ -354,8 +331,7 @@ as
   creation_date  in acs_objects.creation_date%TYPE             default sysdate,
   creation_user  in acs_objects.creation_user%TYPE             default null,
   creation_ip    in acs_objects.creation_ip%TYPE               default null,
-  context_id     in acs_objects.context_id%TYPE                default null,
-  package_id     in acs_objects.package_id%TYPE                default null
+  context_id     in acs_objects.context_id%TYPE                default null
  ) return acs_objects.object_id%TYPE
  is
      v_object_id acs_objects.object_id%TYPE;
@@ -366,13 +342,10 @@ as
          creation_date => creation_date,
          creation_user => creation_user,
          creation_ip => creation_ip,
-         context_id => context_id,
-         package_id => package_id
+         context_id => context_id
      );
-
      insert into acs_mail_multiparts (multipart_id, multipart_kind)
          values (v_object_id, multipart_kind);
-
      return v_object_id;
  end new;
 
@@ -436,36 +409,26 @@ as
  function new (
   mail_link_id    in acs_mail_links.mail_link_id%TYPE default null,
   body_id         in acs_mail_bodies.body_id%TYPE,
+
   context_id      in acs_objects.context_id%TYPE    default null,
   creation_date   in acs_objects.creation_date%TYPE default sysdate,
   creation_user   in acs_objects.creation_user%TYPE default null,
   creation_ip     in acs_objects.creation_ip%TYPE   default null,
-  object_type     in acs_objects.object_type%TYPE   default 'acs_mail_link',
-  package_id      in acs_objects.package_id%TYPE    default null
+  object_type     in acs_objects.object_type%TYPE   default 'acs_mail_link'
  ) return acs_objects.object_id%TYPE
  is
      v_object_id acs_objects.object_id%TYPE;
-     v_package_id acs_objects.package_id%TYPE;
  begin
-     if package_id is null then
-         v_package_id := acs_object.package_id(body_id);
-     else
-         v_package_id := package_id;
-     end if;
-
      v_object_id := acs_object.new (
          object_id => mail_link_id,
          context_id => context_id,
          creation_date => creation_date,
          creation_user => creation_user,
          creation_ip => creation_ip,
-         object_type => object_type,
-         package_id => package_id
+         object_type => object_type
      );
-
      insert into acs_mail_links ( mail_link_id, body_id )
          values ( v_object_id, body_id );
-
      return v_object_id;
  end;
 
