@@ -34,10 +34,10 @@ ad_proc -private acs_mail_check_uuencode { } {
 
 	if { [string equal $encoded_content $expected_result] } {
 		nsv_set acs_mail ns_uuencode_works_p 1
-		ns_log Notice "acs-mail: ns_uuencode works!!"
+		ns_log debug "acs-mail: ns_uuencode works!!"
 	} else {
 		nsv_set acs_mail ns_uuencode_works_p 0
-		ns_log Notice "acs-mail: ns_uuencode broken - will use the slow tcl version"
+		ns_log Warning "acs-mail: ns_uuencode broken - will use the slow tcl version"
 	}
 }
 
