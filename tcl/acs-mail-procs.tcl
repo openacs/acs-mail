@@ -86,7 +86,7 @@ ad_proc -private acs_mail_set_content {
     set item_id [db_exec_plsql insert_new_content "
  		begin
 		  return content_item__new(
-		    'acs-mail message $body_id',  -- new__name
+		    varchar 'acs-mail message $body_id',  -- new__name
 		    null,                     -- new__parent_id
 		    null,                     -- new__item_id
 		    null,                     -- new__locale
@@ -139,7 +139,7 @@ ad_proc -private acs_mail_set_content_file {
     set item_id [db_exec_plsql insert_new_content "
  		begin
 		  return content_item__new(
-		    'acs-mail message $body_id', -- new__name
+		    varchar 'acs-mail message $body_id', -- new__name
 		    null,                     -- new__parent_id
 		    null,                     -- new__item_id
 		    null,                     -- new__locale

@@ -8,7 +8,7 @@
 
 begin
   return content_item__new(
-    'acs-mail message $body_id'::varchar, -- new__name
+    varchar 'acs-mail message $body_id'::varchar, -- new__name
     null,                     -- new__parent_id
     null,                     -- new__item_id
     null,                     -- new__locale
@@ -59,7 +59,7 @@ select content_item__set_live_revision(:revision_id);
 
 begin
   return content_item__new(
-    'acs-mail message $body_id', -- new__name
+    varchar 'acs-mail message $body_id', -- new__name
     null,                     -- new__parent_id
     null,                     -- new__item_id
     null,                     -- new__locale
