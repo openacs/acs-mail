@@ -57,25 +57,17 @@
  
 <fullquery name="acs_mail_content_new.acs_mail_content_new">      
       <querytext>
---      FIX ME PLSQL
-
---        begin
         select acs_mail_gc_object__new (
             gc_object_id => :object_id,
             creation_user => :creation_user,
             creation_ip => :creation_ip
         );
---        end;
-    
       </querytext>
 </fullquery>
 
  
 <fullquery name="acs_mail_body_new.acs_mail_body_new">      
       <querytext>
---      FIX ME PLSQL
-
---        begin
     select acs_mail_body__new (
         body_id => :body_id,
         body_reply_to => :body_reply_to,
@@ -90,104 +82,70 @@
         creation_user => :creation_user,
         creation_ip => :creation_ip
     );
---        end;
-    
       </querytext>
 </fullquery>
 
  
 <fullquery name="acs_mail_body_p.acs_mail_body_p">      
       <querytext>
---      FIX ME PLSQL
-
---      begin
             select acs_mail_body__body_p (:object_id);
-        end;
-    
       </querytext>
 </fullquery>
 
  
 <fullquery name="acs_mail_body_clone.acs_mail_body_clone">      
       <querytext>
---      FIX ME PLSQL
---        begin
         select acs_mail_body__clone (
                 old_body_id => :old_body_id,
                 body_id => :body_id,
                 creation_user => :creation_user,
                 creation_ip => :creation_ip
             );
---        end;
-    
       </querytext>
 </fullquery>
 
  
 <fullquery name="acs_mail_body_set_content_object.acs_mail_body_set_content_object">      
       <querytext>
---      FIX ME PLSQL
-
---        begin
              select acs_mail_body__set_content_object (
                 body_id => :body_id,
                 content_object_id => :content_object_id
             );
---        end;
-    
       </querytext>
 </fullquery>
 
  
 <fullquery name="acs_mail_multipart_new.acs_mail_multipart_new">      
       <querytext>
---      FIX ME PLSQL
-
---        begin
             select acs_mail_multipart__new (
                 multipart_id => :multipart_id,
                 multipart_kind => :multipart_kind,
                 creation_user => :creation_user,
                 creation_ip => :creation_ip
             );
---        end;
-    
       </querytext>
 </fullquery>
 
  
 <fullquery name="acs_mail_multipart_p.acs_mail_multipart_p">      
       <querytext>
---      FIX ME PLSQL
-
---        begin
             select acs_mail_multipart__multipart_p (:object_id);
---        end;
-    
       </querytext>
 </fullquery>
 
  
 <fullquery name="acs_mail_multipart_add_content.acs_mail_multipart_add_content">      
       <querytext>
---      FIX ME PLSQL
-
---        begin
             select acs_mail_multipart__add_content (
                 multipart_id => :multipart_id,
                 content_object_id => :content_object_id
             );
---        end;
-    
       </querytext>
 </fullquery>
 
  
 <fullquery name="acs_mail_link_new.acs_mail_link_new">      
       <querytext>
---      FIX ME PLSQL
-
---        begin
             select acs_mail_link__new (
                 mail_link_id => :mail_link_id,
                 body_id => :body_id,
@@ -195,22 +153,14 @@
                 creation_user => :creation_user,
                 creation_ip => :creation_ip
             );
---        end;
-    
       </querytext>
 </fullquery>
 
  
 <fullquery name="acs_mail_link_p.acs_mail_link_p">      
       <querytext>
---      FIX ME PLSQL
-
---        begin
             select acs_mail_link__link_p (:object_id);
---        end;
-    
       </querytext>
 </fullquery>
 
- 
 </queryset>
