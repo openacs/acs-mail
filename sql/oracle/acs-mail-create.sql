@@ -247,7 +247,7 @@ create table acs_mail_links (
 -- API -----------------------------------------------------------------
 
 -- APIs for the datamodel in this file, separated out for future upgrades
-@@ acs-mail-create-packages
+@@ acs-mail-packages-create
 
 -- Supporting Datamodels -----------------------------------------------
 
