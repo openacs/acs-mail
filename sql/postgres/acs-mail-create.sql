@@ -64,7 +64,7 @@
 -- and how outgoing messages get transformed from this structure is to
 -- be implemented soon.
 
-set feedback off
+-- set feedback off
 
 -- Object System Metadata ----------------------------------------------
 
@@ -81,59 +81,53 @@ set feedback off
 -- the above predicate if it ever stops satisfying it (outside of a
 -- transaction.)
 
-begin
-    acs_object_type__create_type (
-        'acs_mail_gc_object',
-        'ACS Messaging Object',
-        'ACS Messaging Objects',
-	'acs_object',
-        'ACS_MAIL_GC_OBJECTS',
-        'OBJECT_ID',
-        'ACS_MAIL_GC_OBJECT',
-	'f',
-	null,
-        'ACS_OBJECT.DEFAULT_NAME'
-    );
-end;
+select acs_object_type__create_type (
+    'acs_mail_gc_object',
+    'ACS Messaging Object',
+    'ACS Messaging Objects',
+    'acs_object',
+    'ACS_MAIL_GC_OBJECTS',
+    'OBJECT_ID',
+    'ACS_MAIL_GC_OBJECT',
+    'f',
+    null,
+    'ACS_OBJECT.DEFAULT_NAME'
+);
 
 -- Mail bodies are automatically GC'd.  These contain the data
 -- relevant to a single message.  These are shared by being pointed to
 -- by many acs_mail_links.  This should not be subtyped.
 
-begin
-    acs_object_type__create_type (
-        'acs_mail_body',
-        'Mail Body',
-        'Mail Bodies',
-	'acs_mail_gc_object',
-        'ACS_MAIL_BODIES',
-        'BODY_ID',
-        'ACS_MAIL_BODY',
-	'f',
-	null,
-        'ACS_OBJECT.DEFAULT_NAME'
-    );
-end;
+select acs_object_type__create_type (
+    'acs_mail_body',
+    'Mail Body',
+    'Mail Bodies',
+    'acs_mail_gc_object',
+    'ACS_MAIL_BODIES',
+    'BODY_ID',
+    'ACS_MAIL_BODY',
+    'f',
+    null,
+    'ACS_OBJECT.DEFAULT_NAME'
+);
 
 -- multipart mime parts are automatically GC'd.  These contain
 -- multiple parts to make up alternatives or mixed content
 -- (attachments).  These may be shared by belonging to multiple
 -- mail_links.
 
-begin
-    acs_object_type__create_type (
-        'acs_mail_multipart',
-        'ACS Mail Multipart Object',
-        'ACS Mail Multipart Objects',
-	'acs_mail_gc_object',
-        'ACS_MAIL_MULTIPARTS',
-        'MULTIPART_ID',
-        'ACS_MAIL_MULTIPART',
-        'f',
-	null,
-	'ACS_OBJECT.DEFAULT_NAME'
-    );
-end;
+select acs_object_type__create_type (
+    'acs_mail_multipart',
+    'ACS Mail Multipart Object',
+    'ACS Mail Multipart Objects',
+    'acs_mail_gc_object',
+    'ACS_MAIL_MULTIPARTS',
+    'MULTIPART_ID',
+    'ACS_MAIL_MULTIPART',
+    'f',
+    null,
+    'ACS_OBJECT.DEFAULT_NAME'
+);
 
 -- A mail_link, subtypable, and used by applications to track messages.
 -- Permissions should be set at this level.  These should not be
@@ -142,21 +136,18 @@ end;
 -- delete this, which will cause the other objects to be garbage
 -- collected.
 
-begin
-    acs_object_type__create_type (
-        'acs_mail_link',
-        'Mail Message',
-        'Mail Messages',
-	'acs_object',
-        'ACS_MAIL_LINKS',
-        'MAIL_LINK_ID',
-        'ACS_MAIL_LINK',
-	'f',
-	null,
-        'ACS_OBJECT.DEFAULT_NAME'
-    );
-
-end;
+select acs_object_type__create_type (
+    'acs_mail_link',
+    'Mail Message',
+    'Mail Messages',
+    'acs_object',
+    'ACS_MAIL_LINKS',
+    'MAIL_LINK_ID',
+    'ACS_MAIL_LINK',
+    'f',
+    null,
+    'ACS_OBJECT.DEFAULT_NAME'
+);
 
 -- Raw Tables and Comments ---------------------------------------------
 
@@ -247,9 +238,9 @@ create table acs_mail_links (
 -- API -----------------------------------------------------------------
 
 -- APIs for the datamodel in this file, separated out for future upgrades
-@@ acs-mail-packages-create
+\i acs-mail-packages-create
 
 -- Supporting Datamodels -----------------------------------------------
 
 -- The mail queue datamodel
-@@ acs-mail-queue-create
+\i acs-mail-queue-create
