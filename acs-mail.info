@@ -13,6 +13,8 @@
         <summary>General messaging system, mark II</summary>
         <release-date>2004-04-18</release-date>
         <vendor url="http://openacs.org">OpenACS</vendor>
+	<license url="http://www.gnu.org/copyleft/gpl.html">GPL</license>
+	<maturity>3</maturity>
         <description format="text/html">Provides generic message services, with email sending.  The acs-mail-lite package is the prefered 
         interface for new packages and it's anticipated that this package will ultimately be deprecated.</description>
 
