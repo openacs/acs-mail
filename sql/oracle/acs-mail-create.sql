@@ -85,10 +85,10 @@ begin
     acs_object_type.create_type (
         supertype => 'acs_object',
         object_type => 'acs_mail_gc_object',
-        pretty_name => 'ACS Messaging Object',
-        pretty_plural => 'ACS Messaging Objects',
+        pretty_name => 'ACS Mail Object',
+        pretty_plural => 'ACS Mail Objects',
         table_name => 'ACS_MAIL_GC_OBJECTS',
-        id_column => 'OBJECT_ID',
+        id_column => 'GC_OBJECT_ID',
         package_name => 'ACS_MAIL_GC_OBJECT',
         name_method => 'ACS_OBJECT.DEFAULT_NAME'
     );
@@ -104,8 +104,8 @@ begin
     acs_object_type.create_type (
         supertype => 'acs_mail_gc_object',
         object_type => 'acs_mail_body',
-        pretty_name => 'Mail Body',
-        pretty_plural => 'Mail Bodies',
+        pretty_name => 'ACS Mail Body',
+        pretty_plural => 'ACS Mail Bodies',
         table_name => 'ACS_MAIL_BODIES',
         id_column => 'BODY_ID',
         package_name => 'ACS_MAIL_BODY',
@@ -146,8 +146,8 @@ begin
     acs_object_type.create_type (
         supertype => 'acs_object',
         object_type => 'acs_mail_link',
-        pretty_name => 'Mail Message',
-        pretty_plural => 'Mail Messages',
+        pretty_name => 'ACS Mail Message',
+        pretty_plural => 'ACS Mail Messages',
         table_name => 'ACS_MAIL_LINKS',
         id_column => 'MAIL_LINK_ID',
         package_name => 'ACS_MAIL_LINK',
@@ -191,9 +191,9 @@ create table acs_mail_bodies (
     header_subject varchar2(4000),
     header_from varchar2(4000),
     header_to varchar2(4000),
-    content_object_id integer
+    content_item_id integer
         constraint acs_mail_bodies_content_oid_fk
-            references acs_objects
+            references acs_objects on delete cascade
 );
 
 create table acs_mail_body_headers (
@@ -226,8 +226,8 @@ create table acs_mail_multipart_parts (
     mime_filename varchar2(1000),
     mime_disposition varchar2(1000),
     sequence_number integer,
-    content_object_id integer
-        constraint acs_mail_mp_parts_c_obj_id_fk references acs_objects,
+    content_item_id integer
+        constraint acs_mail_mp_parts_c_obj_id_fk references cr_items,
     constraint acs_mail_multipart_parts_pk
         primary key (multipart_id, sequence_number)
 );
@@ -237,7 +237,8 @@ create table acs_mail_multipart_parts (
 create table acs_mail_links (
     mail_link_id integer
         constraint acs_mail_links_ml_id_pk primary key
-        constraint acs_mail_links_ml_id_fk references acs_objects,
+        constraint acs_mail_links_ml_id_fk references acs_objects 
+        on delete cascade,
     body_id integer
         constraint acs_mail_links_body_id_nn not null
         constraint acs_mail_links_body_id_fk references acs_mail_bodies
@@ -253,3 +254,6 @@ create table acs_mail_links (
 
 -- The mail queue datamodel
 @@ acs-mail-queue-create
+
+-- The notification package
+@@ acs-mail-nt-create
