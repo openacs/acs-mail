@@ -165,7 +165,7 @@ as
 	);
 
 	-- get the sender email address
-	select email into v_header_from 
+	select max(email) into v_header_from 
       from parties where party_id = party_from;
 
 	-- get the recipient email address
