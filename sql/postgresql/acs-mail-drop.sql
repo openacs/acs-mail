@@ -8,13 +8,15 @@
 
 -- FIXME: This script has NOT been tested! - vinodk
 
+\i acs-mail-nt-drop.sql
+
 drop function acs_mail_queue_message__new (integer,integer,
 	 integer,timestamp,integer,varchar,varchar);
 drop function acs_mail_queue_message__delete (integer);
 
-drop table acs_mail_queue_messages;
 drop table acs_mail_queue_incoming;
 drop table acs_mail_queue_outgoing;
+drop table acs_mail_queue_messages;
 
 select acs_object_type__drop_type (
 	'acs_mail_queue_message',
@@ -45,22 +47,41 @@ drop function acs_mail_link__link_p (integer);
 
 drop index acs_mail_body_hdrs_body_id_idx;
 
-drop table acs_mail_gc_objects;
-drop table acs_mail_bodies;
+create function inline_0 ()
+returns integer as '
+declare
+	v_rec		acs_objects%ROWTYPE;
+begin
+	for v_rec in select object_id from acs_objects where object_type in (''acs_mail_multipart'',''acs_mail_link'',''acs_mail_body'',''acs_mail_gc_object'') order by object_id desc
+	loop
+		perform acs_object__delete( v_rec.object_id );
+	end loop;
+
+	return 0;
+end;' language 'plpgsql';
+
+select inline_0 ();
+
+drop function inline_0 ();
+
+
 drop table acs_mail_body_headers;
-drop table acs_mail_multiparts;
 drop table acs_mail_multipart_parts;
+drop table acs_mail_multiparts;
 drop table acs_mail_links;
+drop table acs_mail_bodies;
+drop table acs_mail_gc_objects;
+
+select acs_object_type__drop_type (
+	'acs_mail_multipart',
+	't'
+);
 
 select acs_object_type__drop_type (
 	'acs_mail_link',
 	't'
 );
 
-select acs_object_type__drop_type (
-	'acs_mail_multipart',
-	't'
-);
 
 select acs_object_type__drop_type (
 	'acs_mail_body',
@@ -71,3 +92,4 @@ select acs_object_type__drop_type (
 	'acs_mail_gc_object',
 	't'
 );
+
