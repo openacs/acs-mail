@@ -8,14 +8,59 @@ ad_library {
 
 ## Utility Functions ###################################################
 
+# base64 encode a string
+
+proc acs_mail_base64_encode {string} {
+	set i 0
+    foreach char {A B C D E F G H I J K L M N O P Q R S T U V W X Y Z \
+	      a b c d e f g h i j k l m n o p q r s t u v w x y z \
+	      0 1 2 3 4 5 6 7 8 9 + /} {
+	  set base64_en($i) $char
+	  incr i
+    }
+    
+    set result {}
+    set state 0
+    set length 0
+    foreach {c} [split $string {}] {
+		if { $length >= 60 } {
+			append result "\n"
+			set length 0
+		}
+		scan $c %c x
+		switch [incr state] {
+			1 {	append result $base64_en([expr {($x >>2) & 0x3F}]) }
+			2 { append result \
+					$base64_en([expr {(($old << 4) & 0x30) | (($x >> 4) & 0xF)}]) }
+			3 { append result \
+					$base64_en([expr {(($old << 2) & 0x3C) | (($x >> 6) & 0x3)}])
+			append result $base64_en([expr {($x & 0x3F)}])
+			incr length
+			set state 0}
+		}
+		set old $x
+		incr length
+    }
+    set x 0
+    switch $state {
+		0 { # OK }
+		1 { append result $base64_en([expr {(($old << 4) & 0x30)}])== }
+		2 { append result $base64_en([expr {(($old << 2) & 0x3C)}])=  }
+    }
+    return $result
+}
+
 ad_proc -private acs_mail_set_content {
-    {-object_id:required}
+	{-body_id:required}
+	{-header_subject ""}
+	{-creation_user ""}
+	{-creation_ip ""}
     {-content:required}
     {-content_type:required}
     {-nls_language}
     {-searchable_p}
 } {
-    Set the acs_contents info for an object.  Utility function.
+    Create a cr_item, cr_revision and set it live.  Utility function.
 } {
     if ![info exists nls_language] {
         set nls_language [db_null]
@@ -23,27 +68,46 @@ ad_proc -private acs_mail_set_content {
     if ![info exists searchable_p] {
         set searchable_p "f"
     }
-    # There are two possibilities: There's an entry in acs_contents or
-    # there's not.  In any case, we're replacing.  We can delete, then set.
-    db_dml delete_old_content {
-        delete from acs_contents where content_id = :object_id
-    }
-    db_dml insert_new_content {
-        insert into acs_contents
-            (content_id, content, searchable_p, nls_language, mime_type)
-        values
-            (:object_id,empty_blob(),:searchable_p,:nls_language,:content_type)
-    }
-    db_dml update_content {
-        update acs_contents
-            set content = empty_blob()
-            where content_id = :object_id
-            returning content into :1
-    } -blobs [list $content]
+
+    set item_id [db_exec_plsql insert_new_content "
+ 		begin
+		  return content_item__new(
+		    'acs-mail message $body_id',  -- new__name
+		    null,                     -- new__parent_id
+		    null,                     -- new__item_id
+		    null,                     -- new__locale
+		    now(),                    -- new__creation_date
+		    :creation_user,           -- new__creation_user
+		    null,                     -- new__context_id
+		    :creation_ip,             -- new__creation_ip
+		    'content_item',           -- new__item_subtype
+		    'content_revision',       -- new__content_type
+		    :header_subject,          -- new__title
+		    null,                     -- new__description
+		    :content_type,            -- new__mime_type
+		    :nls_language,            -- new__nls_language
+		    :content,                 -- new__text
+		    'text'                    -- new__storage_type
+	      );
+		end;"
+	]
+	
+	set revision_id [db_exec_plsql get_latest_revision "
+	    begin
+		  return content_item__get_latest_revision ( :item_id );
+	    end;"
+	]
+
+	db_exec_plsql set_live_revision "select content_item__set_live_revision(:revision_id)"
+
+    return $item_id
 }
 
 ad_proc -private acs_mail_set_content_file {
-    {-object_id:required}
+	{-body_id:required}
+	{-header_subject ""}
+	{-creation_user ""}
+	{-creation_ip ""}
     {-content_file:required}
     {-content_type:required}
     {-nls_language}
@@ -57,109 +121,210 @@ ad_proc -private acs_mail_set_content_file {
     if ![info exists searchable_p] {
         set searchable_p "t"
     }
-    # There are two possibilities: There's an entry in acs_contents or
-    # there's not.  In any case, we're replacing.  We can delete, then set.
-    db_dml delete_old_content {
-        delete from acs_contents where content_id = :object_id
-    }
-    db_dml insert_new_content {
-        insert into acs_contents
-            (content_id, content, searchable_p, nls_language, mime_type)
-        values
-            (:object_id,empty_blob(),:searchable_p,:nls_language,:content_type)
-    }
-    db_dml update_content {
-        update acs_contents
+
+    set item_id [db_exec_plsql insert_new_content "
+ 		begin
+		  return content_item__new(
+		    'acs-mail message $body_id', -- new__name
+		    null,                     -- new__parent_id
+		    null,                     -- new__item_id
+		    null,                     -- new__locale
+		    now(),                    -- new__creation_date
+		    :creation_user,           -- new__creation_user
+		    null,                     -- new__context_id
+		    :creation_ip,             -- new__creation_ip
+		    'content_item',           -- new__item_subtype
+		    'content_revision',       -- new__content_type
+		    :header_subject,          -- new__title
+		    null,                     -- new__description
+		    :content_type,            -- new__mime_type
+		    :nls_language,            -- new__nls_language
+		    null,                     -- new__text
+		    'file'                    -- new__storage_type
+	      );
+		end;"
+	]
+	
+	set revision_id [db_exec_plsql get_latest_revision "
+	    begin
+		  return content_item__get_latest_revision ( :item_id );
+	    end;"
+	]
+
+	db_exec_plsql set_live_revision "select content_item__set_live_revision(:revision_id)"
+
+	db_dml update_content {
+        update cr_revisions
             set content = empty_blob()
-            where content_id = :object_id
+            where revision_id = :revision_id
             returning content into :1
     } -blob_files [list $content_file]
+		
+	return $item_id
+		
 }
 
-ad_proc -private acs_mail_encode_content {
-    content_object_id
+ad_proc -private acs_mail_uuencode_file {
+	file_path
 } {
-    ns_log "Notice" "acs-mail: encode: starting $content_object_id"
+	Base64 encode binary content from a file
+} {
+	set fd [open "$file_path" r]
+	fconfigure $fd -encoding binary
+	set file_input [read $fd]
+	close $fd
+
+	return [acs_mail_base64_encode $file_input]
+}
+
+
+ad_proc -private acs_mail_encode_content {
+    content_item_id
+} {
+    ns_log Notice "acs-mail: encode: starting $content_item_id"
     # What sort of content do we have?
-    if ![acs_mail_multipart_p $content_object_id] {
-	ns_log "Notice" "acs-mail: encode: one part $content_object_id"
+    if ![acs_mail_multipart_p $content_item_id] {
+		ns_log Notice "acs-mail: encode: one part $content_item_id"
         # Easy as pie.
         # Let's get the data.
-        if [db_0or1row acs_mail_body_to_mime_get_content_simple {
-            select content, mime_type as v_content_type
-                from acs_contents
-                where content_id = :content_object_id
-        }] {
-	    ns_log "Notice" "acs-mail: encode: one part hit $content_object_id"
-            # We win!  Hopefully.  Check if there are 8bit characters/data.
-            # HT NL CR SP-~  The full range of ASCII with spaces but no
-            # control characters.
-            if ![regexp "\[^\u0009\u000A\u000D\u0020-\u007E\]" $content] {
-		ns_log "Notice" "acs-mail: encode: good code $content_object_id"
-                # We're still okay.  Use it!
-                return [list $v_content_type $content]
-            }
-	    ns_log "Notice" "acs-mail: encode: bad code $content_object_id"
-        }
-    } else {
-        # Harder.  Oops.
-	ns_log "Notice" "acs-mail: encode: multipart $content_object_id"
-        set boundary "=-=-="
-        set contents {}
-        # Get the component pieces
-        db_foreach acs_mail_body_to_mime_get_contents {
-            select mime_filename, mime_disposition, content_object_id as coid
-                from acs_mail_multipart_parts
-                where multipart_id = :content_object_id
-            order by sequence_number
-        } {
-            if {[string equal "" $mime_disposition]} {
-                if {![string equal "" $mime_filename]} {
-                    set mime_disposition "attachment; filename=$mime_filename"
-                } else {
-                    set mime_disposition "inline"
-                }
-            } else {
-                if {![string equal "" $mime_filename]} {
-                    set mime_disposition \
-                        "$mime_disposition; filename=$mime_filename"
-                }
-            }
-            set content [acs_mail_encode_content $coid]
-            while {[regexp -- "--$boundary--" $content]} {
-                set boundary "=$boundary"
-            }
-            lappend contents [list $mime_disposition $content]
-        } if_no_rows {
-            # Defaults
-            return {
-                "text/plain; charset=us-ascii"
-                "An ACS object was unable to be encoded here.\n"
-            }
-        }
-        set content_type \
-            "multipart/[acs_mail_multipart_type $content_object_id]; boundary=\"$boundary\""
-        set content ""
-        foreach {cont} $contents {
-	    set c_disp [lindex $cont 0]
-            set c_type [lindex [lindex $cont 1] 0]
-            set c_cont [lindex [lindex $cont 1] 1]
-            append content "--$boundary\n"
-            append content "Content-Type: $c_type\n"
-            append content "Content-Disposition: $c_disp\n"
-            append content "\n"
-            append content $c_cont
-	    append content "\n\n"
-        }
-        append content "--$boundary--\n"
-        return [list $content_type $content]
-    }
 
-    # Defaults
-    return {
-        "text/plain; charset=us-ascii"
-        "An ACS object was unable to be encoded here.\n"
-    }
+		# vinodk: first get the latest revision
+		set revision_id [db_exec_plsql get_latest_revision "
+	      begin
+		    return content_item__get_latest_revision ( :content_item_id );
+	      end;"
+		]
+
+		set storage_type [db_string get_storage_type "
+			select storage_type from cr_items 
+			where item_id = :content_item_id
+		"]
+		
+		if [db_0or1row acs_mail_body_to_mime_get_content_simple {
+			select content, mime_type as v_content_type
+			from cr_revisions
+			where revision_id = :revision_id
+		}] {
+			if [string equal $storage_type text] {
+				ns_log "Notice" "acs-mail: encode: one part hit $content_item_id"
+				# vinodk: no need for this, since we're checking
+				#         storage_type
+				#
+				# We win!  Hopefully.  Check if there are 8bit characters/data.
+				# HT NL CR SP-~  The full range of ASCII with spaces but no
+				# control characters.
+				#if ![regexp "\[^\u0009\u000A\u000D\u0020-\u007E\]" $content] {
+				#	ns_log "Notice" "acs-mail: encode: good code $content_item_id"
+				#	# We're still okay.  Use it!
+					return [list $v_content_type $content]
+				#}
+				#ns_log "Notice" "acs-mail: encode: bad code $content_item_id"
+			} else {
+				# this content is in the file system or a blob
+				ns_log Notice "acs-mail: encode: binary content $content_item_id"
+
+				if  [string equal $storage_type file] {
+					ns_log Notice "acs-mail: encode: file $content_item_id"
+					set encoded_content [acs_mail_uuencode_file [cr_fs_path]$content]
+				} else {
+					ns_log Notice "acs-mail: encode: lob $content_item_id"
+					# Blob. Now we need to decide if this is binary
+					# so we can uuencode it if necessary.
+					# We'll use the mime type to decide
+					
+					if { [string first $v_content_type "text/html"] == 0 } {
+						ns_log Notice "acs-mail: encode: plain content"
+						set encoded_content "$content"
+					} else {
+						# binary content - copy the blob to temp file
+						# that we will then uuencode
+						set file [ns_tmpnam]
+						db_blob_get_file copy_blob_to_file "
+						    select r.content, istorage_type 
+						    from cr_revisions r, cr_items i 
+						    where r.revision_id = $revision_id and
+						          r.item_id = i.item_id " -file $file
+						ns_log Notice "acs-mail: encode: binary content"
+						set encoded_content [acs_mail_uuencode_file $file]
+					}
+				}
+
+				return [list $v_content_type $encoded_content]
+			}
+		}
+	} else {
+		# Harder.  Oops.
+		ns_log "Notice" "acs-mail: encode: multipart $content_item_id"
+		set boundary "=-=-="
+		set contents {}
+		# Get the component pieces
+		set multipart_list [db_list_of_lists acs_mail_body_to_mime_get_contents {
+			select mime_filename, mime_disposition, content_item_id as ci_id
+			from acs_mail_multipart_parts
+			where multipart_id = :content_item_id
+			order by sequence_number
+		} 
+		]
+		
+		if ![empty_string_p $multipart_list] {
+			foreach multipart_item $multipart_list {
+				set mime_filename [lindex $multipart_item 0]
+				set mime_disposition [lindex $multipart_item 1]
+				set ci_id [lindex $multipart_item 2]
+				
+				if {[string equal "" $mime_disposition]} {
+					if {![string equal "" $mime_filename]} {
+						set mime_disposition "attachment; filename=$mime_filename"
+					} else {
+						set mime_disposition "inline"
+					}
+				} else {
+					if {![string equal "" $mime_filename]} {
+						set mime_disposition \
+								"$mime_disposition; filename=$mime_filename"
+					}
+				}
+				set content [acs_mail_encode_content $ci_id]
+				while {[regexp -- "--$boundary--" $content]} {
+					set boundary "=$boundary"
+				}
+				lappend contents [list $mime_disposition $content]
+			}
+		} else {
+			# Defaults
+			return {
+				"text/plain; charset=us-ascii"
+				"An ACS object was unable to be encoded here.\n"
+			}
+		}
+		
+		set content_type \
+				"multipart/[acs_mail_multipart_type $content_item_id]; boundary=\"$boundary\""
+		set content ""
+		foreach {cont} $contents {
+			set c_disp [lindex $cont 0]
+			set c_type [lindex [lindex $cont 1] 0]
+			set c_cont [lindex [lindex $cont 1] 1]
+			append content "--$boundary\n"
+			append content "Content-Type: $c_type\n"
+			if { [string first "text" $c_type] != 0 } {
+				# not a text item: therefore base64
+				append content "Content-Transfer-Encoding: base64\n"
+			}
+			append content "Content-Disposition: $c_disp\n"
+			append content "\n"
+			append content $c_cont
+			append content "\n\n"
+		}
+		append content "--$boundary--\n"
+		return [list $content_type $content]
+	}
+	
+	# Defaults
+	return {
+		"text/plain; charset=us-ascii"
+		"An ACS object was unable to be encoded here.\n"
+	}
 }
 
 ad_proc -private acs_mail_body_to_output_format {
@@ -182,23 +347,25 @@ ad_proc -private acs_mail_body_to_output_format {
     }   
     db_1row acs_mail_body_to_mime_data {
         select header_message_id, header_reply_to, header_subject,
-               header_from, header_to, content_object_id
+               header_from, header_to, content_item_id
             from acs_mail_bodies
             where body_id = :body_id
     }
     set headers [ns_set new]
     ns_set put $headers "Message-Id" $header_message_id
-    if ![string equal $header_to ""] {
-        ns_set put $headers "To" $header_to
-    }
-    if ![string equal $header_from ""] {
-        ns_set put $headers "From" $header_from
-    }
+	# taking these out because they are redundant and 
+	# could conflict with the values in acs_mail_queue_outgoing
+#    if ![string equal $header_to ""] {
+#        ns_set put $headers "To" $header_to
+#    }
+#    if ![string equal $header_from ""] {
+#        ns_set put $headers "From" $header_from
+#    }
     if ![string equal $header_reply_to ""] {
         ns_set put $headers "In-Reply-To" $header_reply_to
     }
     ns_set put $headers "MIME-Version" "1.0"
-    set contents [acs_mail_encode_content $content_object_id]
+    set contents [acs_mail_encode_content $content_item_id]
     set content_type [lindex $contents 0]
     set content [lindex $contents 1]
     ns_set put $headers "Content-Type" "$content_type"
@@ -223,7 +390,7 @@ ad_proc -private acs_mail_process_queue {
             from acs_mail_queue_outgoing
     } {
         set to_send [acs_mail_body_to_output_format -link_id $message_id]
-	set to_send_2 [list $envelope_to $envelope_from [lindex $to_send 2] [lindex $to_send 3] [lindex $to_send 4]]
+		set to_send_2 [list $envelope_to $envelope_from [lindex $to_send 2] [lindex $to_send 3] [lindex $to_send 4]]
 
         if [catch {
             eval ns_sendmail $to_send_2
@@ -254,15 +421,16 @@ ad_proc -private acs_mail_process_queue {
 
   ## acs_mail_content
 
-ad_proc -public acs_mail_content_new {
-    {-object_id ""}
+ad_proc -private acs_mail_content_new {
+	{-body_id:required}
     {-creation_user ""}
     {-creation_ip ""}
+	{-header_subject ""}
     {-content}
     {-content_file}
     {-content_type ""}
 } {
-    Create a new content object (to contain text/plain, or text/html,
+    Create a new CR item (to contain text/plain, or text/html,
     for example.)  If content is given, its text is used to make a
     content entry.  Otherwise, if content_file is given, that file is
     read to make a content entry.
@@ -271,23 +439,19 @@ ad_proc -public acs_mail_content_new {
     use it.  This is for types of files that have no object types of their
     own.
 } {
-    set object_id [db_exec_plsql acs_mail_content_new {
-        begin
-            :1 := acs_mail_gc_object.new (
-                gc_object_id => :object_id,
-                creation_user => :creation_user,
-                creation_ip => :creation_ip
-            );
-        end;
-    }]
     if [info exists content] {
-        acs_mail_set_content \
-            -object_id $object_id -content $content -content_type $content_type
+        set item_id [acs_mail_set_content -body_id $body_id \
+				-header_subject $header_subject \
+				-creation_user $creation_user -creation_ip $creation_ip \
+				-content $content -content_type $content_type]
     } elseif [info exists content_file] {
-        acs_mail_set_content_file -object_id $object_id \
-            -content_file $content_file -content_type $content_type
+        set item_id [acs_mail_set_content_file -body_id $body_id \
+				-header_subject $header_subject \
+				-creation_user $creation_user -creation_ip $creation_ip \
+				-content_file $content_file -content_type $content_type]
     }
-    return $object_id
+
+    return $item_id
 }
 
   ## acs_mail_body
@@ -302,7 +466,7 @@ ad_proc -public acs_mail_body_new {
     {-header_subject ""}
     {-header_from ""}
     {-header_to ""}
-    {-content_object_id ""}
+    {-content_item_id ""}
     {-creation_user ""}
     {-creation_ip ""}
     {-content}
@@ -313,18 +477,7 @@ ad_proc -public acs_mail_body_new {
     If content or content_file is supplied, a content object will
     automatically be created and set as the content object for the new body.
 } {
-    if {[info exists content]} {
-        set content_object_id \
-            [acs_mail_content_new \
-                 -creation_user $creation_user -creation_ip $creation_ip \
-                 -content $content -content_type $content_type]
-    } elseif {[info exists content_file]} {
-        set content_object_id \
-            [acs_mail_content_new \
-                 -creation_user $creation_user -creation_ip $creation_ip \
-                 -content_file $content_file -content_type $content_type]
-    }
-    return [db_exec_plsql acs_mail_body_new {
+	set body_id [db_exec_plsql acs_mail_body_new {
         begin
             :1 := acs_mail_body.new (
                 body_id => :body_id,
@@ -336,12 +489,31 @@ ad_proc -public acs_mail_body_new {
                 header_subject => :header_subject,
                 header_from => :header_from,
                 header_to => :header_to,
-                content_object_id => :content_object_id,
+                content_item_id => :content_item_id,
                 creation_user => :creation_user,
                 creation_ip => :creation_ip
             );
         end;
     }]
+
+    if {[info exists content]} {
+        set content_item_id \
+            [acs_mail_content_new -body_id $body_id \
+                 -creation_user $creation_user -creation_ip $creation_ip \
+				 -header_subject $header_subject \
+                 -content $content -content_type $content_type]
+    } elseif {[info exists content_file]} {
+        set content_item_id \
+            [acs_mail_content_new -body_id $body_id \
+                 -creation_user $creation_user -creation_ip $creation_ip \
+				 -header_subject $header_subject \
+                 -content_file $content_file -content_type $content_type]
+    }
+
+	acs_mail_body_set_content_object -body_id $body_id \
+			-content_item_id $content_item_id
+
+    return $body_id
 }
 
 ad_proc -public acs_mail_body_p {
@@ -396,15 +568,15 @@ ad_proc -public acs_mail_body_clone {
 
 ad_proc -public acs_mail_body_set_content_object {
     {-body_id:required}
-    {-content_object_id:required}
+    {-content_item_id:required}
 } {
-    Sets the content object of the given mail body.
+    Sets the content item of the given mail body.
 } {
     db_exec_plsql acs_mail_body_set_content_object {
         begin
             :1 := acs_mail_body.set_content_object (
                 body_id => :body_id,
-                content_object_id => :content_object_id
+                content_item_id => :content_item_id
             );
         end;
     }
@@ -485,18 +657,18 @@ ad_page_contract_filter acs_mail_multipart_id { name value } {
 
 ad_proc -public acs_mail_multipart_add_content {
     {-multipart_id:required}
-    {-content_object_id:required}
+    {-content_item_id:required}
 } {
     Add a new item to a given multipart object at the end.
 } {
-    db_exec_plsql acs_mail_multipart_add_content {
+    return [db_exec_plsql acs_mail_multipart_add_content {
         begin
-            acs_mail_multipart.add_content (
+            :1 = acs_mail_multipart.add_content (
                 multipart_id => :multipart_id,
-                content_object_id => :content_object_id
+                content_item_id => :content_item_id
             );
         end;
-    }
+    }]
 }
 
   ## acs_mail_link
@@ -508,7 +680,7 @@ ad_proc -public acs_mail_link_new {
     {-creation_ip ""}
     {-context_id ""}
     {-content}
-    {-content_object_id}
+    {-content_item_id}
     {-content_file}
     {-content_type ""}
 } {
@@ -526,10 +698,10 @@ ad_proc -public acs_mail_link_new {
         set body_id [acs_mail_body_new -creation_user $creation_user \
                          -creation_ip $creation_ip -content_file $content \
                          -content_type $content_type]
-    } elseif {[info exists content_object_id]} {
+    } elseif {[info exists content_item_id]} {
         set body_id [acs_mail_body_new -creation_user $creation_user \
                          -creation_ip $creation_ip \
-			 -content_object_id $content_object_id]
+						 -content_item_id $content_item_id]
     } else {
         # Uh oh...  Use a blank one, I guess.  Not so good.
         set body_id [acs_mail_body_new -creation_user $creation_user \
@@ -554,7 +726,7 @@ ad_proc -public acs_mail_link_get_body_id {
     Returns the object_id of the acs_mail_body for this mail link.
 } {
     return [db_string acs_mail_link_get_body_id {
-	select body_id from acs_mail_links where mail_link_id = :link_id
+		select body_id from acs_mail_links where mail_link_id = :link_id
     }]
 }
 
