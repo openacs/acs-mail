@@ -16,7 +16,7 @@
         <description format="text/html">Provides generic message services, with email sending.  The acs-mail-lite package is the prefered 
         interface for new packages and it's anticipated that this package will ultimately be deprecated.</description>
 
-        <="5.1.0a1"/>
+        <provides url="acs-mail" version="5.1.0a1"/>
         <requires url="acs-content-repository" version="5.0.0"/>
         <requires url="acs-kernel" version="5.0.0"/>
 
