@@ -84,7 +84,7 @@ returns integer as '
 declare
 	p_message_id		alias for $1;
 begin
-	perform acs_mail_link.delete( p_message_id );
+	perform acs_mail_link__delete( p_message_id );
 
     return 1;
 end;' language 'plpgsql';
