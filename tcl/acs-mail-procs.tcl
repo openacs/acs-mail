@@ -294,7 +294,7 @@ ad_proc -private acs_mail_encode_content {
 			# Defaults
 			return {
 				"text/plain; charset=us-ascii"
-				"An ACS object was unable to be encoded here.\n"
+				"An OpenACS object was unable to be encoded here.\n"
 			}
 		}
 		
@@ -323,7 +323,7 @@ ad_proc -private acs_mail_encode_content {
 	# Defaults
 	return {
 		"text/plain; charset=us-ascii"
-		"An ACS object was unable to be encoded here.\n"
+		"An OpenACS object was unable to be encoded here.\n"
 	}
 }
 
@@ -537,7 +537,7 @@ ad_page_contract_filter acs_mail_body_id { name value } {
         return 1
     }
     if ![acs_mail_body_p $value] {
-        ad_complain "$name does not refer to a valid ACS Mail body"
+        ad_complain "$name does not refer to a valid OpenACS Mail body"
         return 0
     }
     return 1
@@ -649,7 +649,7 @@ ad_page_contract_filter acs_mail_multipart_id { name value } {
         return 1
     }
     if ![acs_mail_multipart_p $value] {
-      ad_complain "$name does not refer to a valid ACS Mail multipart"
+      ad_complain "$name does not refer to a valid OpenACS Mail multipart"
       return 0
     }
     return 1
@@ -751,7 +751,7 @@ ad_page_contract_filter acs_mail_link_id { name value } {
         return 1
     }
     if ![acs_mail_link_p $value] {
-      ad_complain "$name does not refer to a valid ACS Mail link"
+      ad_complain "$name does not refer to a valid OpenACS Mail link"
       return 0
     }
     return 1
