@@ -63,7 +63,7 @@ begin
 		null,				   -- p_content_item_id
 		''acs_mail_body'',	   -- p_object_type
 		now(),				   -- p_creation_date
-		p_party_from,		   -- p_creation_user
+		null,				   -- p_creation_user
 		null,				   -- p_creation_ip
 		null				   -- p_context_id
 	) into v_body_id;
@@ -94,7 +94,7 @@ begin
 		v_body_id,				-- p_body_id
 		null,					-- p_context_id
 		now(),					-- p_creation_date
-		p_party_from,			-- p_creation_user
+		null,					-- p_creation_user
 		null,					-- p_creation_ip
 		''acs_mail_link''		-- p_object_type
 	) into v_message_id;
