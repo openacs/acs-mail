@@ -23,39 +23,6 @@
         <requires url="acs-content-repository" version="4.1"/>
         <requires url="acs-kernel" version="4.6.2"/>
 
-        <files>
-            <file type="package_spec" path="acs-mail.info"/>
-            <file type="shell" path="bin/queue-message.pl"/>
-            <file type="shell" path="bin/queue-message.sh"/>
-            <file type="data_model_create" db_type="oracle" path="sql/oracle/acs-mail-create.sql"/>
-            <file type="data_model_drop" db_type="oracle" path="sql/oracle/acs-mail-drop.sql"/>
-            <file type="data_model" db_type="oracle" path="sql/oracle/acs-mail-nt-create.sql"/>
-            <file type="data_model" db_type="oracle" path="sql/oracle/acs-mail-nt-drop.sql"/>
-            <file type="data_model" db_type="oracle" path="sql/oracle/acs-mail-packages-create.sql"/>
-            <file type="data_model" db_type="oracle" path="sql/oracle/acs-mail-queue-create.sql"/>
-            <file type="data_model_upgrade" db_type="oracle" path="sql/oracle/upgrade/upgrade-4.5-4.6.sql"/>
-            <file type="data_model_upgrade" db_type="oracle" path="sql/oracle/upgrade/upgrade-4.6-4.6.1.sql"/>
-            <file type="data_model_upgrade" db_type="oracle" path="sql/oracle/upgrade/upgrade-4.6.2-4.6.2.sql"/>
-            <file type="data_model_create" db_type="postgresql" path="sql/postgresql/acs-mail-create.sql"/>
-            <file type="data_model_drop" db_type="postgresql" path="sql/postgresql/acs-mail-drop.sql"/>
-            <file type="data_model" db_type="postgresql" path="sql/postgresql/acs-mail-nt-create.sql"/>
-            <file type="data_model" db_type="postgresql" path="sql/postgresql/acs-mail-nt-drop.sql"/>
-            <file type="data_model" db_type="postgresql" path="sql/postgresql/acs-mail-packages-create.sql"/>
-            <file type="data_model" db_type="postgresql" path="sql/postgresql/acs-mail-queue-create.sql"/>
-            <file type="data_model_upgrade" db_type="postgresql" path="sql/postgresql/upgrade/upgrade-4.5-4.6.sql"/>
-            <file type="data_model_upgrade" db_type="postgresql" path="sql/postgresql/upgrade/upgrade-4.6-4.6.1.sql"/>
-            <file type="data_model_upgrade" db_type="postgresql" path="sql/postgresql/upgrade/upgrade-4.6.1-4.6.2.sql"/>
-            <file type="tcl_init" path="tcl/acs-mail-init.tcl"/>
-            <file type="query_file" db_type="oracle" path="tcl/acs-mail-procs-oracle.xql"/>
-            <file type="query_file" db_type="postgresql" path="tcl/acs-mail-procs-postgresql.xql"/>
-            <file type="tcl_procs" path="tcl/acs-mail-procs.tcl"/>
-            <file type="query_file" path="tcl/acs-mail-procs.xql"/>
-            <file path="tcl/test-binary-file"/>
-            <file type="documentation" path="www/doc/design.html"/>
-            <file type="documentation" path="www/doc/index.html"/>
-            <file type="documentation" path="www/doc/openacs-mail.html"/>
-            <file type="documentation" path="www/doc/requirements.html"/>
-        </files>
         <parameters>
         <!-- No version parameters -->
         </parameters>
