@@ -120,7 +120,7 @@ begin
 end;
 ' language 'plpgsql';
 
-create function acs_mail_body__body_p(integer) 
+create or replace function acs_mail_body__body_p(integer) 
 returns boolean as '
 	p_object_id		alias for $1;
     v_check_body_id integer;
@@ -134,7 +134,7 @@ begin
          return ''f'';
      end if;
 end;
-' language 'plpgsql';
+' language 'plpgsql' stable;
 
 create function acs_mail_body__clone (integer,integer,varchar,timestamptz,integer,varchar,integer) 
 returns integer as '
@@ -245,7 +245,7 @@ begin
 end;
 ' language 'plpgsql';
 
-create function acs_mail_multipart__multipart_p (integer)
+create or replace function acs_mail_multipart__multipart_p (integer)
 returns boolean as '
 declare
 	p_object_id				alias for $1;
@@ -261,7 +261,7 @@ begin
         return ''f'';
     end if;
 end;
-' language 'plpgsql';
+' language 'plpgsql' stable;
 
  -- Add content at a specific index.  If the sequence number is null,
  -- below one, or higher than the highest item already available,
@@ -336,7 +336,7 @@ begin
 end;
 ' language 'plpgsql';
 
-create function acs_mail_link__link_p (integer)
+create or replace function acs_mail_link__link_p (integer)
 returns boolean as '
 declare
 	p_object_id				alias for $1;
@@ -352,7 +352,7 @@ begin
         return ''f'';
     end if;
 end;
-' language 'plpgsql';
+' language 'plpgsql' stable;
 
 --end acs_mail_link;
 
