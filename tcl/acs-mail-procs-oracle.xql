@@ -4,92 +4,160 @@
    <rdbms><type>oracle</type><version>8.1.6</version></rdbms>
 
 <fullquery name="acs_mail_set_content.insert_new_content">      
-      <querytext>
-      
-        insert into acs_contents
-            (content_id, content, searchable_p, nls_language, mime_type)
-        values
-            (:object_id,empty_blob(),:searchable_p,:nls_language,:content_type)
+<querytext>
+
+begin
+	:1 := content_item.new (
+	    name          => 'acs-mail message $body_id',
+	    creation_user => :creation_user,
+		creation_ip   => :creation_ip,
+		title         => :header_subject,
+		nls_language  => :nls_language,
+		text		  => :content,
+		storage_type  => 'lob'
+    );
+end;
     
-      </querytext>
+</querytext>
+</fullquery>
+
+
+
+ 
+<fullquery name="acs_mail_set_content.get_latest_revision">
+<querytext>
+      
+begin
+  :1 := content_item.get_latest_revision ( :item_id );
+end;
+    
+</querytext>
 </fullquery>
 
  
-<fullquery name="acs_mail_set_content.update_content">      
-      <querytext>
-      
-        update acs_contents
-            set content = empty_blob()
-            where content_id = :object_id
-            returning content into :1
+
+
+<fullquery name="acs_mail_set_content.set_live_revision">      
+<querytext>
+
+begin
+	content_item.set_live_revision(:revision_id);
+end;
     
-      </querytext>
+</querytext>
 </fullquery>
 
  
-<fullquery name="acs_mail_set_content.insert_new_content">      
-      <querytext>
+<fullquery name="acs_mail_set_content_file.insert_new_content">
+<querytext>
       
-        insert into acs_contents
-            (content_id, content, searchable_p, nls_language, mime_type)
-        values
-            (:object_id,empty_blob(),:searchable_p,:nls_language,:content_type)
+begin
+	:1 := content_item.new (
+		name => 'acs-mail message $body_id',
+		creation_user => :creation_user,
+		creation_ip   => :creation_ip,
+		title		  => :header_subject,
+		nls_language  => :nls_language,
+		storage_type  => 'file'
+    );
+end;
+
+</querytext>
+</fullquery>
+
+
+
+ 
+<fullquery name="acs_mail_set_content_file.get_latest_revision">
+<querytext>
+      
+begin
+  :1 := content_item.get_latest_revision ( :item_id );
+end;"
     
-      </querytext>
+</querytext>
 </fullquery>
 
  
-<fullquery name="acs_mail_set_content.update_content">      
-      <querytext>
-      
-        update acs_contents
-            set content = empty_blob()
-            where content_id = :object_id
-            returning content into :1
+
+
+<fullquery name="acs_mail_set_content_file.set_live_revision">
+<querytext>
+
+begin
+	content_item.set_live_revision(:revision_id);
+end;
     
-      </querytext>
+</querytext>
 </fullquery>
 
- 
-<fullquery name="acs_mail_content_new.acs_mail_content_new">      
-      <querytext>
+
+
+<fullquery name="acs_mail_set_content_file.update_content">      
+<querytext>
       
-        begin
-            :1 := acs_mail_gc_object.new (
-                gc_object_id => :object_id,
-                creation_user => :creation_user,
-                creation_ip => :creation_ip
-            );
-        end;
+update cr_revisions
+  set content = empty_blob()
+  where revision_id = :revision_id
+  returning content into :1
     
-      </querytext>
+</querytext>
 </fullquery>
 
- 
+
+
+<fullquery name="acs_mail_encode_content.get_latest_revision">      
+<querytext>
+      
+begin
+    :1 := content_item.get_latest_revision ( :content_item_id );
+end;
+    
+</querytext>
+</fullquery>
+
+
+
+
+<fullquery name="acs_mail_encode_content.copy_blob_to_file">
+<querytext>
+      
+select r.content, i.storage_type 
+from cr_revisions r, cr_items i 
+where r.revision_id = $revision_id and
+      r.item_id = i.item_id
+        
+</querytext>
+</fullquery>
+
+
+
 <fullquery name="acs_mail_body_new.acs_mail_body_new">      
-      <querytext>
+<querytext>
       
-        begin
-            :1 := acs_mail_body.new (
-                body_id => :body_id,
-                body_reply_to => :body_reply_to,
-                body_from => :body_from,
-                body_date => :body_date,
-                header_message_id => :header_message_id,
-                header_reply_to => :header_reply_to,
-                header_subject => :header_subject,
-                header_from => :header_from,
-                header_to => :header_to,
-                content_object_id => :content_object_id,
-                creation_user => :creation_user,
-                creation_ip => :creation_ip
-            );
-        end;
+begin
+    :1 := acs_mail_body.new (
+        body_id => :body_id,
+        body_reply_to => :body_reply_to,
+        body_from => :body_from,
+        body_date => :body_date,
+        header_message_id => :header_message_id,
+        header_reply_to => :header_reply_to,
+        header_subject => :header_subject,
+        header_from => :header_from,
+        header_to => :header_to,
+        content_item_id => :content_item_id,
+        creation_user => :creation_user,
+        creation_ip => :creation_ip
+    );
+end;
     
-      </querytext>
+</querytext>
 </fullquery>
 
  
+
+
 <fullquery name="acs_mail_body_p.acs_mail_body_p">      
       <querytext>
       
@@ -117,18 +185,20 @@
 </fullquery>
 
  
-<fullquery name="acs_mail_body_set_content_object.acs_mail_body_set_content_object">      
-      <querytext>
+<fullquery name="acs_mail_body_set_content_object.acs_mail_body_set_content_object">
+<querytext>
       
-        begin
-            :1 := acs_mail_body.set_content_object (
-                body_id => :body_id,
-                content_object_id => :content_object_id
-            );
-        end;
+begin
+    acs_mail_body.set_content_object (
+        body_id => :body_id,
+        content_item_id => :content_item_id
+    );
+end;
     
-      </querytext>
+</querytext>
 </fullquery>
+
+
 
  
 <fullquery name="acs_mail_multipart_new.acs_mail_multipart_new">      
@@ -147,6 +217,8 @@
 </fullquery>
 
  
+
+
 <fullquery name="acs_mail_multipart_p.acs_mail_multipart_p">      
       <querytext>
       
@@ -157,19 +229,23 @@
       </querytext>
 </fullquery>
 
+
+
  
-<fullquery name="acs_mail_multipart_add_content.acs_mail_multipart_add_content">      
-      <querytext>
+<fullquery name="acs_mail_multipart_add_content.acs_mail_multipart_add_content">
+<querytext>
       
-        begin
-            acs_mail_multipart.add_content (
-                multipart_id => :multipart_id,
-                content_object_id => :content_object_id
-            );
-        end;
+begin
+    :1 := acs_mail_multipart.add_content (
+        multipart_id => :multipart_id,
+        content_item_id => :content_item_id
+    );
+end;
     
-      </querytext>
+</querytext>
 </fullquery>
+
+
 
  
 <fullquery name="acs_mail_link_new.acs_mail_link_new">      
