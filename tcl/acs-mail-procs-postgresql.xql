@@ -6,9 +6,8 @@
 <fullquery name="acs_mail_set_content.insert_new_content">      
 <querytext>
 
-begin
-  return content_item__new(
-    varchar 'acs-mail message $body_id'::varchar, -- new__name
+select content_item__new(
+    'acs-mail message $body_id', -- new__name
     null,                     -- new__parent_id
     null,                     -- new__item_id
     null,                     -- new__locale
@@ -24,8 +23,7 @@ begin
     :nls_language,            -- new__nls_language
     :content,                 -- new__text
     'text'                    -- new__storage_type
-  );
-end;
+  )
     
 </querytext>
 </fullquery>
