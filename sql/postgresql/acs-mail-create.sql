@@ -238,9 +238,9 @@ create table acs_mail_links (
 -- API -----------------------------------------------------------------
 
 -- APIs for the datamodel in this file, separated out for future upgrades
-\i acs-mail-packages-create
+\i acs-mail-packages-create.sql
 
 -- Supporting Datamodels -----------------------------------------------
 
 -- The mail queue datamodel
-\i acs-mail-queue-create
+\i acs-mail-queue-create.sql
