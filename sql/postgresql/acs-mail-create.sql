@@ -83,15 +83,15 @@
 
 select acs_object_type__create_type (
     'acs_mail_gc_object',
-    'ACS Messaging Object',
-    'ACS Messaging Objects',
+    'ACS Mail Object',
+    'ACS Mail Objects',
     'acs_object',
-    'ACS_MAIL_GC_OBJECTS',
-    'OBJECT_ID',
-    'ACS_MAIL_GC_OBJECT',
+    'acs_mail_gc_objects',
+    'gc_object_id',
+    'acs_mail_gc_object',
     'f',
     null,
-    'ACS_OBJECT.DEFAULT_NAME'
+    'acs_object.default_name'
 );
 
 -- Mail bodies are automatically GC'd.  These contain the data
@@ -100,15 +100,15 @@ select acs_object_type__create_type (
 
 select acs_object_type__create_type (
     'acs_mail_body',
-    'Mail Body',
-    'Mail Bodies',
+    'ACS Mail Body',
+    'ACS Mail Bodies',
     'acs_mail_gc_object',
-    'ACS_MAIL_BODIES',
-    'BODY_ID',
-    'ACS_MAIL_BODY',
+    'acs_mail_bodies',
+    'body_id',
+    'acs_mail_body',
     'f',
     null,
-    'ACS_OBJECT.DEFAULT_NAME'
+    'acs_object.default_name'
 );
 
 -- multipart mime parts are automatically GC'd.  These contain
@@ -121,12 +121,12 @@ select acs_object_type__create_type (
     'ACS Mail Multipart Object',
     'ACS Mail Multipart Objects',
     'acs_mail_gc_object',
-    'ACS_MAIL_MULTIPARTS',
-    'MULTIPART_ID',
-    'ACS_MAIL_MULTIPART',
+    'acs_mail_multiparts',
+    'multipart_id',
+    'acs_mail_multipart',
     'f',
     null,
-    'ACS_OBJECT.DEFAULT_NAME'
+    'acs_object.default_name'
 );
 
 -- A mail_link, subtypable, and used by applications to track messages.
@@ -138,15 +138,15 @@ select acs_object_type__create_type (
 
 select acs_object_type__create_type (
     'acs_mail_link',
-    'Mail Message',
-    'Mail Messages',
+    'ACS Mail Message',
+    'ACS Mail Messages',
     'acs_object',
-    'ACS_MAIL_LINKS',
-    'MAIL_LINK_ID',
-    'ACS_MAIL_LINK',
+    'acs_mail_links',
+    'mail_link_id',
+    'acs_mail_link',
     'f',
     null,
-    'ACS_OBJECT.DEFAULT_NAME'
+    'acs_object.default_name'
 );
 
 -- Raw Tables and Comments ---------------------------------------------
@@ -154,45 +154,57 @@ select acs_object_type__create_type (
   -- All garbage collectable objects are in this table
 
 create table acs_mail_gc_objects (
-    gc_object_id integer
-        constraint acs_mail_gc_objs_object_id_pk
-            primary key
-        constraint acs_mail_gc_objs_object_id_fk
-            references acs_objects
+    gc_object_id		integer
+						constraint acs_mail_gc_objs_object_id_pk
+						primary key
+						constraint acs_mail_gc_objs_object_id_fk
+						references acs_objects on delete cascade
 );
 
   -- Mail bodies
 
 create table acs_mail_bodies (
-    body_id integer
-        constraint acs_mail_bodies_body_id_pk primary key
-        constraint acs_mail_bodies_body_id_fk
-            references acs_mail_gc_objects on delete cascade,
-    body_reply_to integer
-        constraint acs_mail_bodies_reply_to_fk
-            references acs_mail_bodies on delete set null,
-    body_from integer
-        constraint acs_mail_bodies_body_from_fk
-            references parties on delete set null,
-    body_date timestamp,
-    header_message_id varchar(1000)
-        constraint acs_mail_bodies_h_m_id_un unique
-        constraint acs_mail_bodies_h_m_id_nn not null,
-    header_reply_to varchar(1000),
-    header_subject text,
-    header_from text,
-    header_to text,
-    content_object_id integer
-        constraint acs_mail_bodies_content_oid_fk
-            references acs_objects
+    body_id				integer
+						constraint acs_mail_bodies_body_id_pk 
+						primary key
+						constraint acs_mail_bodies_body_id_fk
+						references acs_mail_gc_objects 
+						on delete cascade,
+    body_reply_to		integer
+						constraint acs_mail_bodies_reply_to_fk
+						references acs_mail_bodies on delete set null,
+    body_from			integer
+						constraint acs_mail_bodies_body_from_fk
+						references parties on delete set null,
+    body_date			timestamp,
+    header_message_id	varchar(1000)
+						constraint acs_mail_bodies_h_m_id_un 
+						unique
+						constraint acs_mail_bodies_h_m_id_nn 
+						not null,
+    header_reply_to		varchar(1000),
+    header_subject		text,
+    header_from			text,
+    header_to			text,
+	-- content_item_id is a reference to acs_objects
+	-- if you are creating a simple message,
+	--   we expect you to create your CR item first before
+	--   calling acs_mail_bodies__new, so content_item_id will
+	--   refer to a cr_item
+	-- if you are creating a multipart message,
+	--   then create a acs_mail_multipart first and then supply
+	--   the multipart_id as the content_item_id
+    content_item_id		integer
+						constraint acs_mail_bodies_content_iid_fk
+						references acs_objects on delete cascade
 );
 
 create table acs_mail_body_headers (
-    body_id integer
-        constraint acs_mail_body_heads_body_id_fk
-            references acs_mail_bodies on delete cascade,
-    header_name varchar(1000),
-    header_content text
+    body_id				integer
+						constraint acs_mail_body_heads_body_id_fk
+						references acs_mail_bodies on delete cascade,
+    header_name			varchar(1000),
+    header_content		text
 );
 
 create index acs_mail_body_hdrs_body_id_idx
@@ -201,24 +213,26 @@ create index acs_mail_body_hdrs_body_id_idx
   -- MIME Multiparts
 
 create table acs_mail_multiparts (
-    multipart_id integer
-        constraint acs_mail_multiparts_mp_id_pk primary key
-        constraint acs_mail_multiparts_mp_id_fk
-            references acs_mail_gc_objects on delete cascade,
-    multipart_kind varchar(120)
-        constraint acs_mail_multiparts_mp_kind_nn not null
+    multipart_id		integer
+						constraint acs_mail_multiparts_mp_id_pk 
+						primary key
+						constraint acs_mail_multiparts_mp_id_fk
+						references acs_mail_gc_objects on delete cascade,
+    multipart_kind		varchar(120)
+						constraint acs_mail_multiparts_mp_kind_nn 
+						not null
 );
 
 create table acs_mail_multipart_parts (
-    multipart_id integer
-        constraint acs_mail_mp_parts_mp_id_fk
-            references acs_mail_multiparts
-                on delete cascade,
-    mime_filename varchar(1000),
-    mime_disposition varchar(1000),
-    sequence_number integer,
-    content_object_id integer
-        constraint acs_mail_mp_parts_c_obj_id_fk references acs_objects,
+    multipart_id		integer
+						constraint acs_mail_mp_parts_mp_id_fk
+						references acs_mail_multiparts on delete cascade,
+    mime_filename		varchar(1000),
+    mime_disposition	varchar(1000),
+    sequence_number		integer,
+    content_item_id		integer
+						constraint acs_mail_mp_parts_c_itm_id_fk 
+						references cr_items on delete cascade,
     constraint acs_mail_multipart_parts_pk
         primary key (multipart_id, sequence_number)
 );
@@ -227,11 +241,15 @@ create table acs_mail_multipart_parts (
 
 create table acs_mail_links (
     mail_link_id integer
-        constraint acs_mail_links_ml_id_pk primary key
-        constraint acs_mail_links_ml_id_fk references acs_objects,
-    body_id integer
-        constraint acs_mail_links_body_id_nn not null
-        constraint acs_mail_links_body_id_fk references acs_mail_bodies
+				 constraint acs_mail_links_ml_id_pk 
+				 primary key
+				 constraint acs_mail_links_ml_id_fk 
+				 references acs_objects on delete cascade,
+    body_id		 integer
+				 constraint acs_mail_links_body_id_nn 
+				 not null
+				 constraint acs_mail_links_body_id_fk 
+				 references acs_mail_bodies on delete cascade
 );
 
 
@@ -244,3 +262,6 @@ create table acs_mail_links (
 
 -- The mail queue datamodel
 \i acs-mail-queue-create.sql
+
+-- The notification package
+\i acs-mail-nt-create.sql
