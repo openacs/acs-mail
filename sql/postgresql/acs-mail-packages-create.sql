@@ -202,7 +202,8 @@ end;
 
 create or replace function acs_mail_body__body_p(integer) 
 returns boolean as '
-	p_object_id		alias for $1;
+declare
+    p_object_id		alias for $1;
     v_check_body_id integer;
 begin
 	select count(body_id) into v_check_body_id
