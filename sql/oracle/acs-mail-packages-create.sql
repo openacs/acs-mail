@@ -41,7 +41,7 @@ as
   header_subject    in acs_mail_bodies.header_subject%TYPE    default null,
   header_from       in acs_mail_bodies.header_from%TYPE       default null,
   header_to         in acs_mail_bodies.header_to%TYPE         default null,
-  content_object_id in acs_mail_bodies.content_object_id%TYPE default null,
+  content_item_id	in acs_mail_bodies.content_item_id%TYPE default null,
 
   object_type       in acs_objects.object_type%TYPE default 'acs_mail_body',
   creation_date     in acs_objects.creation_date%TYPE default sysdate,
@@ -74,7 +74,7 @@ as
 
  procedure set_content_object (
   body_id           in acs_mail_bodies.body_id%TYPE,
-  content_object_id in acs_mail_bodies.content_object_id%TYPE
+  content_item_id	in acs_mail_bodies.content_item_id%TYPE
  );
 
 end;
@@ -108,10 +108,10 @@ as
  -- below one, or higher than the highest item already available,
  -- adds at the end.  Otherwise, inserts and renumbers others.
 
- procedure add_content (
+ function add_content (
   multipart_id      in acs_mail_multipart_parts.multipart_id%TYPE,
-  content_object_id in acs_mail_multipart_parts.content_object_id%TYPE
- );
+  content_item_id	in acs_mail_multipart_parts.content_item_id%TYPE
+ ) return integer;
 
 end acs_mail_multipart;
 /
@@ -197,7 +197,7 @@ as
   header_subject    in acs_mail_bodies.header_subject%TYPE    default null,
   header_from       in acs_mail_bodies.header_from%TYPE       default null,
   header_to         in acs_mail_bodies.header_to%TYPE         default null,
-  content_object_id in acs_mail_bodies.content_object_id%TYPE default null,
+  content_item_id	in acs_mail_bodies.content_item_id%TYPE	  default null,
 
   object_type       in acs_objects.object_type%TYPE default 'acs_mail_body',
   creation_date     in acs_objects.creation_date%TYPE default sysdate,
@@ -224,11 +224,11 @@ as
      insert into acs_mail_bodies
          (body_id, body_reply_to, body_from, body_date, header_message_id,
           header_reply_to, header_subject, header_from, header_to,
-          content_object_id)
+          content_item_id)
      values
          (v_object_id, body_reply_to, body_from, body_date,
           v_header_message_id, header_reply_to, header_subject, header_from,
-          header_to, content_object_id);
+          header_to, content_item_id);
      return v_object_id;
  end new;
 
@@ -275,14 +275,14 @@ as
      header_subject    acs_mail_bodies.header_subject%TYPE;
      header_from       acs_mail_bodies.header_from%TYPE;
      header_to         acs_mail_bodies.header_to%TYPE;
-     content_object_id acs_mail_bodies.content_object_id%TYPE;
+     content_item_id   acs_mail_bodies.content_item_id%TYPE;
  begin
      select body_reply_to, body_from, body_date,
             header_reply_to, header_subject, header_from, header_to,
-            content_object_id
+            content_item_id
          into body_reply_to, body_from, body_date,
             header_reply_to, header_subject, header_from, header_to,
-            content_object_id
+            content_item_id
          from acs_mail_bodies
          where body_id = old_body_id;
      v_object_id := acs_mail_body.new (
@@ -294,7 +294,7 @@ as
          header_subject => header_subject,
          header_from => header_from,
          header_to => header_to,
-         content_object_id => content_object_id,
+         content_item_id => content_item_id,
          object_type => object_type,
          creation_date => creation_date,
          creation_user => creation_user,
@@ -306,12 +306,12 @@ as
 
  procedure set_content_object (
   body_id           in acs_mail_bodies.body_id%TYPE,
-  content_object_id in acs_mail_bodies.content_object_id%TYPE
+  content_item_id in acs_mail_bodies.content_item_id%TYPE
  )
  is
  begin
      update acs_mail_bodies
-         set content_object_id = set_content_object.content_object_id
+         set content_item_id = set_content_object.content_item_id
          where body_id = set_content_object.body_id;
  end set_content_object;
 
@@ -377,10 +377,11 @@ as
  -- below one, or higher than the highest item already available,
  -- adds at the end.  Otherwise, inserts and renumbers others.
 
- procedure add_content (
+ function add_content (
   multipart_id      in acs_mail_multipart_parts.multipart_id%TYPE,
-  content_object_id in acs_mail_multipart_parts.content_object_id%TYPE
- ) is
+  content_item_id	in acs_mail_multipart_parts.content_item_id%TYPE
+ ) return integer
+ is
      v_multipart_id acs_mail_multiparts.multipart_id%TYPE;
      v_max_num integer;
  begin
@@ -391,9 +392,11 @@ as
          from acs_mail_multipart_parts
          where multipart_id = add_content.multipart_id;
      insert into acs_mail_multipart_parts
-         (multipart_id, sequence_number, content_object_id)
+         (multipart_id, sequence_number, content_item_id)
      values
-         (multipart_id, v_max_num + 1, content_object_id);
+         (multipart_id, v_max_num + 1, content_item_id);
+
+	 return v_max_num + 1;
  end add_content;
 
 end acs_mail_multipart;
