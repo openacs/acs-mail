@@ -13,7 +13,7 @@ returns integer as '
 declare
     gc_object_id  alias for $1;    -- default null
     object_type   alias for $2;    -- default 'acs_mail_gc_object'
-    creation_date alias for $3;    -- default sysdate
+    creation_date alias for $3;    -- default now
     creation_user alias for $4;    -- default null
     creation_ip   alias for $5;    -- default null
     context_id    alias for $6;    -- default null
@@ -49,6 +49,9 @@ end;
 ---
 -- create or replace package body acs_mail_body
 
+-- note for docs that I am making header_message_id mandatory
+-- jag
+
 create function acs_mail_body__new (integer,integer,integer,timestamp,
 varchar,varchar,text,text,text,integer,varchar,date,integer,varchar,integer)
 as ' 
@@ -64,12 +67,13 @@ declare
     header_to         alias for $9;    -- default null
     content_object_id alias for $10;   -- default null
     object_type       alias for $11;   -- default 'acs_mail_body'
-    creation_date     alias for $12;   -- default sysdate
+    creation_date     alias for $12;   -- default now()
     creation_user     alias for $13;   -- default null
     creation_ip       alias for $14;   -- default null
     context_id        alias for $15;   -- default null
     v_object_id       integer;
-    v_header_message_id varchar;
+-- not needed anymore
+--    v_header_message_id varchar;
  begin
      v_object_id := acs_mail_gc_object__new (
          gc_object_id => body_id,
@@ -79,19 +83,21 @@ declare
          creation_ip => creation_ip,
          context_id => context_id
      );
--- this needs to change it is using an oracle proc 
--- [ns_conn host] type of arg?
-    v_header_message_id :=
-         coalesce (header_message_id,
-             sysdate || '.' || v_object_id || '@' ||
-                 utl_inaddr.get_host_name || '.sddd');
+-- I am making this mandatory for now
+    if header_message_id is null then 
+        raise exception ''You didn't supply a header_message_id'';
+    end if;
+
+--         coalesce (header_message_id,
+--            now() || '.' || v_object_id || '@' ||
+--                 utl_inaddr.get_host_name || '.sddd');
      insert into acs_mail_bodies
          (body_id, body_reply_to, body_from, body_date, header_message_id,
           header_reply_to, header_subject, header_from, header_to,
           content_object_id)
      values
          (v_object_id, body_reply_to, body_from, body_date,
-          v_header_message_id, header_reply_to, header_subject, header_from,
+          header_message_id, header_reply_to, header_subject, header_from,
           header_to, content_object_id);
      return v_object_id;
 end;
@@ -112,7 +118,7 @@ returns char as '
     object_id alias for $1;
     v_check_body_id integer;
 begin
-     select decode(count(body_id),0,0,1) into v_check_body_id
+     select case when (count(body_id)=0 then 0 else1) into v_check_body_id
          from acs_mail_bodies
          where body_id = object_id;
      if v_check_body_id <> 0 then
@@ -130,7 +136,7 @@ declare
     old_body_id       alias for $1;
     body_id           alias for $2;    -- default null
     object_type       alias for $3;    -- default 'acs_mail_body'
-    creation_date     alias for $4;    -- default sysdate
+    creation_date     alias for $4;    -- default now()
     creation_user     alias for $5;    -- default null
     creation_ip       alias for $6;    -- default null
     context_id        alias for $7;    -- default null
@@ -195,7 +201,7 @@ declare
     multipart_id   alias for $1;    -- default null,
     multipart_kind alias for $2;
     object_type    alias for $3;    -- default 'acs_mail_multipart'
-    creation_date  alias for $4;    -- default sysdate
+    creation_date  alias for $4;    -- default now()
     creation_user  alias for $5;    -- default null
     creation_ip    alias for $6;    -- default null
     context_id     alias for $7;    -- default null
@@ -231,7 +237,7 @@ declare
     object_id alias for $1;
     v_check_multipart_id integer;
 begin
-    select decode(count(multipart_id),0,0,1) into v_check_multipart_id
+    select (case when count(multipart_id) = 0 then 0 else 1 end) into v_check_multipart_id
         from acs_mail_multiparts
         where multipart_id = object_id;
     if v_check_multipart_id <> 0 then
@@ -277,7 +283,7 @@ declare
     mail_link_id    alias for $1;    -- default null
     body_id         alias for $2;
     context_id      alias for $3;    -- default null
-    creation_date   alias for $4;    -- default sysdate
+    creation_date   alias for $4;    -- default now()
     creation_user   alias for $5;    -- default null
     creation_ip     alias for $6;    -- default null
     object_type     alias for $7;    -- default 'acs_mail_link'
@@ -315,7 +321,7 @@ declare
     object_id alias for $1;
     v_check_link_id integer;
 begin
-    select decode(count(mail_link_id),0,0,1) into v_check_link_id
+    select (case when count(mail_link_id) = 0 then 0 else 1) into v_check_link_id
         from acs_mail_links
         where mail_link_id = object_id;
     if v_check_link_id <> 0 then
