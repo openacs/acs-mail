@@ -12,10 +12,11 @@
         <database>oracle</database>
         <database>postgresql</database>
     </database-support>
-        <owner url="mailto:jmp@arsdigita.com">John Prevost</owner>
+        <owner url="mailto:vkurup@massmed.org">Vinod Kurup</owner>
+        <owner>John Prevost</owner>
         <summary>General messaging system, mark II</summary>
         <release-date>2001-03-06</release-date>
-        <vendor url="http://www.arsdigita.com/">ArsDigita Corporation</vendor>
+        <vendor url="http://www.openacs.org/">OpenACS</vendor>
         <description format="text/html">Provides generic message services, with email sending.</description>
 
         <provides url="acs-mail" version="4.1"/>
