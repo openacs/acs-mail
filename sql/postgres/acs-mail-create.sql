@@ -183,7 +183,7 @@ create table acs_mail_bodies (
     body_from integer
         constraint acs_mail_bodies_body_from_fk
             references parties on delete set null,
-    body_date date,
+    body_date timestamp,
     header_message_id varchar(1000)
         constraint acs_mail_bodies_h_m_id_un unique
         constraint acs_mail_bodies_h_m_id_nn not null,

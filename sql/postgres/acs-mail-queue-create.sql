@@ -50,7 +50,7 @@ create table acs_mail_queue_outgoing (
 -- API -----------------------------------------------------------------
 --create or replace package body acs_mail_queue_message__
 create function acs_mail_queue_message__new (integer,integer,
-integer,date,integer,varchar,varchar)
+integer,timestamp,integer,varchar,varchar)
 returns integer as '
 declare
     mail_link_id    alias for $1;    -- default null

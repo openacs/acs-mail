@@ -8,7 +8,7 @@
 
 -- Package Implementations ---------------------------------------------
 
-create function acs_mail_gc_object__new (integer,varchar,datetime,integer,varchar,integer)
+create function acs_mail_gc_object__new (integer,varchar,timestamp,integer,varchar,integer)
 returns integer as '
 declare
     gc_object_id  alias for $1;    -- default null
@@ -49,7 +49,7 @@ end;
 ---
 -- create or replace package body acs_mail_body
 
-create function acs_mail_body__new (integer,integer,integer,date,
+create function acs_mail_body__new (integer,integer,integer,timestamp,
 varchar,varchar,text,text,text,integer,varchar,date,integer,varchar,integer)
 as ' 
 declare
@@ -80,8 +80,9 @@ declare
          context_id => context_id
      );
 -- this needs to change it is using an oracle proc 
+-- [ns_conn host] type of arg?
     v_header_message_id :=
-         nvl(header_message_id,
+         coalesce (header_message_id,
              sysdate || '.' || v_object_id || '@' ||
                  utl_inaddr.get_host_name || '.sddd');
      insert into acs_mail_bodies
@@ -122,7 +123,7 @@ begin
  end;
 ' language 'pgplsql';
 
-create function acs_mail_body__clone (integer,integer,varchar,date,
+create function acs_mail_body__clone (integer,integer,varchar,timestamp,
 integer,varchar,integer) 
 returns integer as '
 declare 
@@ -136,7 +137,7 @@ declare
     v_object_id       integer;
     body_reply_to     integer;
     body_from         integer;
-    body_date         date;
+    body_date         timestamp;
     header_message_id varchar;
     header_reply_to   varchar;
     header_subject    text;
@@ -188,7 +189,7 @@ end;
 ----
 --create or replace package body acs_mail_multipart
 create function acs_mail_multipart__new (integer,varchar,varchar,
-date,integer,varchar,integer) 
+timestamp,integer,varchar,integer) 
 returns integer as '
 declare
     multipart_id   alias for $1;    -- default null,
@@ -256,7 +257,7 @@ begin
     -- get a row lock on the multipart item
     select multipart_id into v_multipart_id from acs_mail_multiparts
         where multipart_id = add_content.multipart_id for update;
-    select nvl(max(sequence_number),0) into v_max_num
+    select coalesce(max(sequence_number),0) into v_max_num
         from acs_mail_multipart_parts
         where multipart_id = add_content.multipart_id;
     insert into acs_mail_multipart_parts
@@ -269,7 +270,7 @@ end;
 --end acs_mail_multipart;
 
 --create or replace package body acs_mail_link__
-create function acs_mail_link__new (integer,integer,integer,date,
+create function acs_mail_link__new (integer,integer,integer,timestamp,
 integer,varchar,varchar)
 returns integer as '
 declare
