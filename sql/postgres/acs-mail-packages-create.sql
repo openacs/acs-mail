@@ -51,6 +51,7 @@ end;
 
 -- note for docs that I am making header_message_id mandatory
 -- jag
+drop function acs_mail_body__new (integer,integer,integer,timestamp,varchar,varchar,text,text,text,integer,varchar,date,integer,varchar,integer);
 
 create function acs_mail_body__new (integer,integer,integer,timestamp,varchar,varchar,text,text,text,integer,varchar,date,integer,varchar,integer)
 returns integer as ' 
@@ -72,8 +73,9 @@ declare
     context_id        alias for $15;   -- default null
     v_object_id       integer;
  begin
-    if header_message_id is null then 
-        raise exception ''You didn't supply a header_message_id'';
+
+    if header_message_id is null or header_message_id = '''' then 
+        raise EXCEPTION ''-20100: You didn''t supply a header_message_id'';
     end if;
 
      v_object_id := acs_mail_gc_object__new (
