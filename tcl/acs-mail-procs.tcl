@@ -195,10 +195,10 @@ ad_proc -private acs_mail_uuencode_file {
 ad_proc -private acs_mail_encode_content {
     content_item_id
 } {
-    ns_log Notice "acs-mail: encode: starting $content_item_id"
+    ns_log Debug "acs-mail: encode: starting $content_item_id"
     # What sort of content do we have?
     if ![acs_mail_multipart_p $content_item_id] {
-		ns_log Notice "acs-mail: encode: one part $content_item_id"
+		ns_log Debug "acs-mail: encode: one part $content_item_id"
         # Easy as pie.
         # Let's get the data.
 
@@ -220,7 +220,7 @@ ad_proc -private acs_mail_encode_content {
 			where revision_id = :revision_id
 		}] {
 			if [string equal $storage_type text] {
-				ns_log "Notice" "acs-mail: encode: one part hit $content_item_id"
+				ns_log Debug "acs-mail: encode: one part hit $content_item_id"
 				# vinodk: no need for this, since we're checking
 				#         storage_type
 				#
@@ -228,26 +228,26 @@ ad_proc -private acs_mail_encode_content {
 				# HT NL CR SP-~  The full range of ASCII with spaces but no
 				# control characters.
 				#if ![regexp "\[^\u0009\u000A\u000D\u0020-\u007E\]" $content] {
-				#	ns_log "Notice" "acs-mail: encode: good code $content_item_id"
+				#	ns_log Debug "acs-mail: encode: good code $content_item_id"
 				#	# We're still okay.  Use it!
 					return [list $v_content_type $content]
 				#}
 				#ns_log "Notice" "acs-mail: encode: bad code $content_item_id"
 			} else {
 				# this content is in the file system or a blob
-				ns_log Notice "acs-mail: encode: binary content $content_item_id"
+				ns_log Debug "acs-mail: encode: binary content $content_item_id"
 
 				if  [string equal $storage_type file] {
-					ns_log Notice "acs-mail: encode: file $content_item_id"
+					ns_log Debug "acs-mail: encode: file $content_item_id"
 					set encoded_content [acs_mail_uuencode_file [cr_fs_path]$content]
 				} else {
-					ns_log Notice "acs-mail: encode: lob $content_item_id"
+					ns_log Debug "acs-mail: encode: lob $content_item_id"
 					# Blob. Now we need to decide if this is binary
 					# so we can uuencode it if necessary.
 					# We'll use the mime type to decide
 					
 					if { [string first "text" $v_content_type] == 0 } {
-						ns_log Notice "acs-mail: encode: plain content"
+						ns_log Debug "acs-mail: encode: plain content"
 						set encoded_content "$content"
 					} else {
 						# binary content - copy the blob to temp file
@@ -258,7 +258,7 @@ ad_proc -private acs_mail_encode_content {
 						    from cr_revisions r, cr_items i 
 						    where r.revision_id = $revision_id and
 						          r.item_id = i.item_id " -file $file
-						ns_log Notice "acs-mail: encode: binary content"
+						ns_log Debug "acs-mail: encode: binary content"
 						set encoded_content [acs_mail_uuencode_file $file]
 					}
 				}
@@ -268,7 +268,7 @@ ad_proc -private acs_mail_encode_content {
 		}
 	} else {
 		# Harder.  Oops.
-		ns_log "Notice" "acs-mail: encode: multipart $content_item_id"
+		ns_log Debug "acs-mail: encode: multipart $content_item_id"
 		set boundary "=-=-="
 		set contents {}
 		# Get the component pieces
@@ -419,7 +419,7 @@ ad_proc -private acs_mail_process_queue {
             }
         }
     }
-    ns_log "Notice" "acs-mail-queue: cleaning up"
+    ns_log Debug "acs-mail-queue: cleaning up"
     # All done.  Delete dangling links.
     db_dml acs_message_cleanup_queue {
         delete from acs_mail_queue_messages
@@ -428,7 +428,7 @@ ad_proc -private acs_mail_process_queue {
                 and message_id not in
                     (select message_id from acs_mail_queue_incoming)
     }
-    ns_log "Notice" "acs-mail-queue: done cleaning up"
+    ns_log Debug "acs-mail-queue: done cleaning up"
 }
 
 ## Basic API ###########################################################
