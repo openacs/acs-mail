@@ -8,7 +8,38 @@
 
 -- Package Implementations ---------------------------------------------
 
-create function acs_mail_gc_object__new (integer,varchar,timestamptz,integer,varchar,integer)
+create or replace function acs_mail_gc_object__new (integer,varchar,timestamptz,integer,varchar,integer,varchar,integer)
+returns integer as '
+declare
+    p_gc_object_id  alias for $1;    -- default null
+    p_object_type   alias for $2;    -- default acs_mail_gc_object
+    p_creation_date alias for $3;    -- default now
+    p_creation_user alias for $4;    -- default null
+    p_creation_ip   alias for $5;    -- default null
+    p_context_id    alias for $6;    -- default null
+    p_title         alias for $7;    -- default null
+    p_package_id    alias for $8;    -- default null
+    v_object_id   integer;
+begin
+    v_object_id := acs_object__new (
+		p_gc_object_id,		-- object_id 
+		p_object_type,		-- object_type 
+		p_creation_date,	-- creation_date 
+		p_creation_user,	-- creation_user 
+		p_creation_ip,		-- creation_ip 
+		p_context_id,		-- context_id
+		''t'',			-- security_inherit_p
+		p_title,		-- title
+		p_package_id		-- package_id
+    );
+
+    insert into acs_mail_gc_objects values ( v_object_id );
+
+    return v_object_id;
+end;
+' language 'plpgsql';
+
+create or replace function acs_mail_gc_object__new (integer,varchar,timestamptz,integer,varchar,integer)
 returns integer as '
 declare
     p_gc_object_id  alias for $1;    -- default null
@@ -34,7 +65,7 @@ begin
 end;
 ' language 'plpgsql';
 
-create function acs_mail_gc_object__delete(integer) 
+create or replace function acs_mail_gc_object__delete(integer) 
 returns integer as '
 declare
 	p_gc_object_id	alias for $1;
@@ -51,38 +82,48 @@ end;
 -- first create a CR item.
 -- then call acs_mail_body__new with the CR item's item_id
 
-create function acs_mail_body__new (integer,integer,integer,timestamptz,varchar,varchar,text,text,text,integer,varchar,date,integer,varchar,integer)
+create or replace function acs_mail_body__new (integer,integer,integer,timestamptz,varchar,varchar,text,text,text,integer,varchar,date,integer,varchar,integer,integer)
 returns integer as ' 
 declare
-	p_body_id			alias for $1;    -- default null
+	p_body_id		alias for $1;    -- default null
 	p_body_reply_to		alias for $2;    -- default null
-	p_body_from			alias for $3;    -- default null
-	p_body_date			alias for $4;    -- default null
+	p_body_from		alias for $3;    -- default null
+	p_body_date		alias for $4;    -- default null
 	p_header_message_id	alias for $5;    -- default null
-	p_header_reply_to   alias for $6;    -- default null
-	p_header_subject    alias for $7;    -- default null
-	p_header_from       alias for $8;    -- default null
-	p_header_to         alias for $9;    -- default null
-	p_content_item_id   alias for $10;   -- default null
-	p_object_type       alias for $11;   -- default acs_mail_body
-	p_creation_date     alias for $12;   -- default now()
-	p_creation_user     alias for $13;   -- default null
-	p_creation_ip       alias for $14;   -- default null
-	p_context_id        alias for $15;   -- default null
-    v_object_id         integer;
+	p_header_reply_to	alias for $6;    -- default null
+	p_header_subject	alias for $7;    -- default null
+	p_header_from		alias for $8;    -- default null
+	p_header_to		alias for $9;    -- default null
+	p_content_item_id	alias for $10;   -- default null
+	p_object_type		alias for $11;   -- default acs_mail_body
+	p_creation_date		alias for $12;   -- default now()
+	p_creation_user		alias for $13;   -- default null
+	p_creation_ip		alias for $14;   -- default null
+	p_context_id		alias for $15;   -- default null
+	p_package_id		alias for $16;   -- default null
+	v_object_id		integer;
+	v_package_id		acs_objects.package_id%TYPE;
 	v_system_url		varchar;
 	v_domain_name		varchar;
-	v_idx				integer;
+	v_idx			integer;
 	v_header_message_id	acs_mail_bodies.header_message_id%TYPE;
 begin
 
+     if p_package_id is null then
+         v_package_id := acs_object__package_id(p_content_item_id);
+     else
+         v_package_id := p_package_id;
+     end if;
+
      v_object_id := acs_mail_gc_object__new (
-		p_body_id,			-- gc_object_id 
-		p_object_type,		-- object_type 
-		p_creation_date,	-- creation_date 
-		p_creation_user,	-- creation_user 
-		p_creation_ip,		-- creation_ip 
-		p_context_id		-- context_id 
+		p_body_id,				-- gc_object_id 
+		p_object_type,				-- object_type 
+		p_creation_date,			-- creation_date 
+		p_creation_user,			-- creation_user 
+		p_creation_ip,				-- creation_ip 
+		p_context_id,				-- context_id
+		substr(p_header_subject,1,1000),	-- title
+		v_package_id				-- package_id
      );
 
 	-- vinodk: get SystemURL parameter and use it to extract domain name
@@ -108,8 +149,47 @@ begin
 end;
 ' language 'plpgsql';
 
+create or replace function acs_mail_body__new (integer,integer,integer,timestamptz,varchar,varchar,text,text,text,integer,varchar,date,integer,varchar,integer)
+returns integer as ' 
+declare
+	p_body_id		alias for $1;    -- default null
+	p_body_reply_to		alias for $2;    -- default null
+	p_body_from		alias for $3;    -- default null
+	p_body_date		alias for $4;    -- default null
+	p_header_message_id	alias for $5;    -- default null
+	p_header_reply_to	alias for $6;    -- default null
+	p_header_subject	alias for $7;    -- default null
+	p_header_from		alias for $8;    -- default null
+	p_header_to		alias for $9;    -- default null
+	p_content_item_id	alias for $10;   -- default null
+	p_object_type		alias for $11;   -- default acs_mail_body
+	p_creation_date		alias for $12;   -- default now()
+	p_creation_user		alias for $13;   -- default null
+	p_creation_ip		alias for $14;   -- default null
+	p_context_id		alias for $15;   -- default null
+begin
+	return acs_mail_body__new(p_body_id,
+				p_body_reply_to,
+				p_body_from,
+				p_body_date,
+				p_header_message_id,
+				p_header_reply_to,
+				p_header_subject,
+				p_header_from,
+				p_header_to,
+				p_content_item_id,
+				p_object_type,
+				p_creation_date,
+				p_creation_user,
+				p_creation_ip,
+				p_content_id,
+				null
+	);
+end;
+' language 'plpgsql';
 
-create function acs_mail_body__delete(integer)
+
+create or replace function acs_mail_body__delete(integer)
 returns integer as ' 
 declare
 	p_body_id		alias for $1;
@@ -136,7 +216,7 @@ begin
 end;
 ' language 'plpgsql' stable;
 
-create function acs_mail_body__clone (integer,integer,varchar,timestamptz,integer,varchar,integer) 
+create or replace function acs_mail_body__clone (integer,integer,varchar,timestamptz,integer,varchar,integer) 
 returns integer as '
 declare 
 	p_old_body_id       alias for $1;
@@ -156,15 +236,17 @@ declare
     v_header_from       text;
     v_header_to         text;
     v_content_item_id integer;
+    v_package_id        acs_objects.package_id%TYPE;
 begin
      select body_reply_to, body_from, body_date,
             header_reply_to, header_subject, header_from, header_to,
-            content_item_id
+            content_item_id, package_id
          into v_body_reply_to, v_body_from, v_body_date,
             v_header_reply_to, v_header_subject, v_header_from, v_header_to,
-            v_content_item_id
-         from acs_mail_bodies
-         where body_id = p_old_body_id;
+            v_content_item_id, v_package_id
+         from acs_mail_bodies b, acs_objects o
+         where b.body_id = p_old_body_id
+	 and o.object_id = b.body_id;
 
      v_object_id := acs_mail_body__new (
 		p_body_id,				-- body_id 
@@ -179,15 +261,16 @@ begin
 		p_object_type,			-- object_type 
 		p_creation_date,		-- creation_date 
 		p_creation_user,		-- creation_user 
-		p_creation_ip,			-- creation_ip 
-		p_context_id			-- context_id 
+		p_creation_ip,			-- creation_ip
+		p_context_id,			-- context_id
+		v_package_id			-- package_id
      );
 
      return v_object_id;
 end;
 ' language 'plpgsql';
 
-create function acs_mail_body__set_content_object (integer,integer) 
+create or replace function acs_mail_body__set_content_object (integer,integer) 
 returns integer as '
 declare
 	p_body_id				alias for $1;
@@ -203,18 +286,52 @@ end;
 
 ----
 --create or replace package body acs_mail_multipart
-create function acs_mail_multipart__new (integer,varchar,varchar,
+create or replace function acs_mail_multipart__new (integer,varchar,varchar,
+timestamptz,integer,varchar,integer,integer) 
+returns integer as '
+declare
+	p_multipart_id		alias for $1;    -- default null,
+	p_multipart_kind	alias for $2;
+	p_object_type		alias for $3;    -- default acs_mail_multipart
+	p_creation_date		alias for $4;    -- default now()
+	p_creation_user		alias for $5;    -- default null
+	p_creation_ip		alias for $6;    -- default null
+	p_context_id		alias for $7;    -- default null
+	p_package_id		alias for $8;    -- default null
+	v_object_id		integer;
+begin
+    v_object_id := acs_mail_gc_object__new (
+		p_multipart_id,		-- gc_object_id 
+		p_object_type,		-- object_type 
+		p_creation_date,	-- creation_date 
+		p_creation_user,	-- creation_user 
+		p_creation_ip,		-- creation_ip 
+		p_context_id,		-- context_id
+		null,			-- title
+		p_package_id		-- package_id
+    );
+	
+	insert into acs_mail_multiparts 
+	 (multipart_id, multipart_kind)
+	values 
+	 (v_object_id, p_multipart_kind);
+
+    return v_object_id;
+end;
+' language 'plpgsql';
+
+create or replace function acs_mail_multipart__new (integer,varchar,varchar,
 timestamptz,integer,varchar,integer) 
 returns integer as '
 declare
 	p_multipart_id		alias for $1;    -- default null,
 	p_multipart_kind	alias for $2;
-    p_object_type		alias for $3;    -- default acs_mail_multipart
-    p_creation_date		alias for $4;    -- default now()
-    p_creation_user		alias for $5;    -- default null
-    p_creation_ip		alias for $6;    -- default null
-    p_context_id		alias for $7;    -- default null
-    v_object_id			integer;
+	p_object_type		alias for $3;    -- default acs_mail_multipart
+	p_creation_date		alias for $4;    -- default now()
+	p_creation_user		alias for $5;    -- default null
+	p_creation_ip		alias for $6;    -- default null
+	p_context_id		alias for $7;    -- default null
+	v_object_id		integer;
 begin
     v_object_id := acs_mail_gc_object__new (
 		p_multipart_id,		-- gc_object_id 
@@ -234,7 +351,7 @@ begin
 end;
 ' language 'plpgsql';
 
-create function acs_mail_multipart__delete (integer)
+create or replace function acs_mail_multipart__delete (integer)
 returns integer as '
 declare
 	p_multipart_id		alias for $1;
@@ -267,7 +384,7 @@ end;
  -- below one, or higher than the highest item already available,
  -- adds at the end.  Otherwise, inserts and renumbers others.
 
-create function acs_mail_multipart__add_content (integer,integer)
+create or replace function acs_mail_multipart__add_content (integer,integer)
 returns integer as ' 
 declare
 	p_multipart_id			alias for $1;
@@ -295,17 +412,51 @@ end;
 --end acs_mail_multipart;
 
 --create or replace package body acs_mail_link__
-create function acs_mail_link__new (integer,integer,integer,timestamptz,integer,varchar,varchar)
+create or replace function acs_mail_link__new (integer,integer,integer,timestamptz,integer,varchar,varchar,integer)
 returns integer as '
 declare
 	p_mail_link_id			alias for $1;    -- default null
-	p_body_id				alias for $2;
+	p_body_id			alias for $2;
 	p_context_id			alias for $3;    -- default null
 	p_creation_date			alias for $4;    -- default now()
 	p_creation_user			alias for $5;    -- default null
 	p_creation_ip			alias for $6;    -- default null
 	p_object_type			alias for $7;    -- default acs_mail_link
-    v_mail_link_id			acs_mail_links.mail_link_id%TYPE;
+	p_package_id			alias for $8;    -- default null
+	v_mail_link_id			acs_mail_links.mail_link_id%TYPE;
+begin
+    v_mail_link_id := acs_object__new (
+		p_mail_link_id,		-- object_id 
+		p_object_type,		-- object_type 
+		p_creation_date,	-- creation_date 
+		p_creation_user,	-- creation_user 
+		p_creation_ip,		-- creation_ip 
+		p_context_id,		-- context_id
+		''t'',			-- security_inherit_p
+		null,			-- title
+		p_package_id		-- package_id
+    );
+
+    insert into acs_mail_links 
+	 ( mail_link_id, body_id )
+	values 
+	 ( v_mail_link_id, p_body_id );
+
+    return v_mail_link_id;
+end;
+' language 'plpgsql';
+
+create or replace function acs_mail_link__new (integer,integer,integer,timestamptz,integer,varchar,varchar)
+returns integer as '
+declare
+	p_mail_link_id			alias for $1;    -- default null
+	p_body_id			alias for $2;
+	p_context_id			alias for $3;    -- default null
+	p_creation_date			alias for $4;    -- default now()
+	p_creation_user			alias for $5;    -- default null
+	p_creation_ip			alias for $6;    -- default null
+	p_object_type			alias for $7;    -- default acs_mail_link
+	v_mail_link_id			acs_mail_links.mail_link_id%TYPE;
 begin
     v_mail_link_id := acs_object__new (
 		p_mail_link_id,		-- object_id 
@@ -325,7 +476,7 @@ begin
 end;
 ' language 'plpgsql';
 
-create function acs_mail_link__delete (integer)
+create or replace function acs_mail_link__delete (integer)
 returns integer as '
 declare
 	p_mail_link_id			alias for $1;
