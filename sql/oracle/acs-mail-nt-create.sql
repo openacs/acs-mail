@@ -126,6 +126,7 @@ as
 	v_item_id		cr_items.item_id%TYPE;
 	v_revision_id	cr_revisions.revision_id%TYPE;
 	v_message_id	acs_mail_queue_messages.message_id%TYPE;
+	v_creation_user	acs_objects.creation_user%TYPE;
  begin
 	if max_retries <> 0 then
 	   raise_application_error(-20000,
@@ -133,12 +134,37 @@ as
 		);
 	end if;
 
+	-- get the sender email address
+	select max(email) into v_header_from from parties where party_id = party_from;
+
+	-- if sender address is null, then use site default OutgoingSender
+	if v_header_from is null then
+	   	select apm.get_value(package_id, 'OutgoingSender') into v_header_from
+		from apm_packages where package_key='acs-kernel';
+	end if;
+
+	-- make sure that this party is in users table. If not, let creation_user
+	-- be null to prevent integrity constraint violations on acs_objects
+	select max(user_id) into v_creation_user 
+      from users where user_id = party_from;
+
+	-- get the recipient email address
+	select max(email) into v_header_to from parties where party_id = party_to;
+
+	-- do not let any of these addresses be null
+	if v_header_from is null or v_header_to is null then
+	   raise_application_error(-20000,
+			'acs_mail_nt: cannot sent email to blank address or from blank address.'
+	   );
+	end if;
+
 	-- create a mail body with empty content
 
 	v_body_id := acs_mail_body.new (
 		body_from => party_from,
 		body_date => sysdate,
-		header_subject => subject
+		header_subject => subject,
+		creation_user => v_creation_user
 	);
 
 	-- create a CR item to stick message into
@@ -161,16 +187,9 @@ as
 
 	-- queue the message
 	v_message_id := acs_mail_queue_message.new (
-		body_id       => v_body_id
+		body_id       => v_body_id,
+		creation_user => v_creation_user
 	);
-
-	-- get the sender email address
-	select max(email) into v_header_from 
-      from parties where party_id = party_from;
-
-	-- get the recipient email address
-	select email into v_header_to 
-	  from parties where party_id = party_to;
 
 	-- now put the message into the outgoing queue
 	-- i know this seems redundant, but that's the way it was built.

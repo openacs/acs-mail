@@ -9,6 +9,7 @@
 -- FIXME: This script has NOT been tested! - vinodk
 
 drop function acs_mail_nt__post_request(integer,integer,boolean,varchar,text,integer);
+drop function acs_mail_nt__post_request(integer,integer,varchar,text);
 drop function acs_mail_nt__cancel_request (integer);
 drop function acs_mail_nt__expand_requests ();
 drop function acs_mail_nt__update_requests ();
