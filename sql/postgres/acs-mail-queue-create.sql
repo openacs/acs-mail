@@ -6,22 +6,18 @@
 -- @cvs-id $Id$
 --
 
-begin
-    acs_object_type__create_type (
-        'acs_mail_queue_message',
-        'Queued Message',
-        'Queued Messages',
-	'acs_mail_link',
-        'ACS_MESSAGES_QUEUE_MESSAGE',
-        'MESSAGE_ID',
-	null,
-	'f',
-	null,
-        'ACS_OBJECT.DEFAULT_NAME'
-    );
-end;
-/
-show errors
+select acs_object_type__create_type (
+    'acs_mail_queue_message',
+    'Queued Message',
+    'Queued Messages',
+    'acs_mail_link',
+    'ACS_MESSAGES_QUEUE_MESSAGE',
+    'MESSAGE_ID',
+    null,
+    'f',
+    null,
+    'ACS_OBJECT.DEFAULT_NAME'
+);
 
 create table acs_mail_queue_messages (
     message_id integer
@@ -59,7 +55,7 @@ declare
     creation_date   alias for $4;    -- default sysdate
     creation_user   alias for $5;    -- default null
     creation_ip     alias for $6;    -- default null
-    object_type     alias for $7;    -- default 'acs_mail_link'
+    object_type     alias for $7;    -- default acs_mail_link
     v_object_id     integer;
  begin
     v_object_id := acs_mail_link__new (
@@ -75,7 +71,7 @@ declare
         values ( v_object_id );
     return v_object_id;
 end;
-' language 'pgplsql';
+' language 'plpgsql';
 
 create function acs_mail_queue_message__delete (integer)
 returns integer as '
@@ -87,7 +83,7 @@ begin
     acs_mail_link.delete(message_id);
     return 1;
 end;
-' language 'pgplsql';
+' language 'plpgsql';
 -- end acs_mail_queue_message;
 
 

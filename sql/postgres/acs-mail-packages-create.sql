@@ -12,7 +12,7 @@ create function acs_mail_gc_object__new (integer,varchar,timestamp,integer,varch
 returns integer as '
 declare
     gc_object_id  alias for $1;    -- default null
-    object_type   alias for $2;    -- default 'acs_mail_gc_object'
+    object_type   alias for $2;    -- default acs_mail_gc_object
     creation_date alias for $3;    -- default now
     creation_user alias for $4;    -- default null
     creation_ip   alias for $5;    -- default null
@@ -32,7 +32,7 @@ declare
  end;
 ' language 'plpgsql';
 
-procedure acs_mail_gc_object__delete (integer)
+create function acs_mail_gc_object__delete(integer) 
 returns integer as '
 declare
     gc_object_id alias for $1;
@@ -52,9 +52,8 @@ end;
 -- note for docs that I am making header_message_id mandatory
 -- jag
 
-create function acs_mail_body__new (integer,integer,integer,timestamp,
-varchar,varchar,text,text,text,integer,varchar,date,integer,varchar,integer)
-as ' 
+create function acs_mail_body__new (integer,integer,integer,timestamp,varchar,varchar,text,text,text,integer,varchar,date,integer,varchar,integer)
+returns integer as ' 
 declare
     body_id           alias for $1;    -- default null
     body_reply_to     alias for $2;    -- default null
@@ -66,15 +65,17 @@ declare
     header_from       alias for $8;    -- default null
     header_to         alias for $9;    -- default null
     content_object_id alias for $10;   -- default null
-    object_type       alias for $11;   -- default 'acs_mail_body'
+    object_type       alias for $11;   -- default acs_mail_body
     creation_date     alias for $12;   -- default now()
     creation_user     alias for $13;   -- default null
     creation_ip       alias for $14;   -- default null
     context_id        alias for $15;   -- default null
     v_object_id       integer;
--- not needed anymore
---    v_header_message_id varchar;
  begin
+    if header_message_id is null then 
+        raise exception ''You didn't supply a header_message_id'';
+    end if;
+
      v_object_id := acs_mail_gc_object__new (
          gc_object_id => body_id,
          object_type => object_type,
@@ -83,51 +84,46 @@ declare
          creation_ip => creation_ip,
          context_id => context_id
      );
--- I am making this mandatory for now
-    if header_message_id is null then 
-        raise exception ''You didn't supply a header_message_id'';
-    end if;
 
---         coalesce (header_message_id,
---            now() || '.' || v_object_id || '@' ||
---                 utl_inaddr.get_host_name || '.sddd');
-     insert into acs_mail_bodies
-         (body_id, body_reply_to, body_from, body_date, header_message_id,
-          header_reply_to, header_subject, header_from, header_to,
-          content_object_id)
-     values
+    insert into acs_mail_bodies
+        (body_id, body_reply_to, body_from, body_date, header_message_id,
+         header_reply_to, header_subject, header_from, header_to,
+         content_object_id)
+    values
          (v_object_id, body_reply_to, body_from, body_date,
           header_message_id, header_reply_to, header_subject, header_from,
           header_to, content_object_id);
      return v_object_id;
 end;
-' language 'pgplsql';
+' language 'plpgsql';
 
-create function acs_mail_body__delete (integer) 
+
+create function acs_mail_body__delete(integer)
 returns integer as ' 
 declare
     body_id alias for $1;
 begin
-    acs_mail_gc_object__delete(body_id);
+    PERFORM acs_mail_gc_object__delete(body_id);
+
     return 1;
 end;
-' language 'pgpsql';
+' language 'plpgsql';
 
-create function acs_mail_body__body_p (integer) 
+create function acs_mail_body__body_p(integer) 
 returns char as '
     object_id alias for $1;
     v_check_body_id integer;
 begin
-     select case when (count(body_id)=0 then 0 else1) into v_check_body_id
+     select case when (count(body_id)=0 then 0 else 1) into v_check_body_id
          from acs_mail_bodies
          where body_id = object_id;
      if v_check_body_id <> 0 then
-         return 't';
+         return ''t'';
      else
-         return 'f';
+         return ''f'';
      end if;
  end;
-' language 'pgplsql';
+' language 'plpgsql';
 
 create function acs_mail_body__clone (integer,integer,varchar,timestamp,
 integer,varchar,integer) 
@@ -135,7 +131,7 @@ returns integer as '
 declare 
     old_body_id       alias for $1;
     body_id           alias for $2;    -- default null
-    object_type       alias for $3;    -- default 'acs_mail_body'
+    object_type       alias for $3;    -- default acs_mail_body
     creation_date     alias for $4;    -- default now()
     creation_user     alias for $5;    -- default null
     creation_ip       alias for $6;    -- default null
@@ -177,9 +173,11 @@ declare
      );
      return v_object_id;
 end;
-' language 'pgplsql';
+' language 'plpgsql';
 
-create function acs_mail_body__set_content_object (integer,integer) 
+-- had to truncate the proc name from 
+-- acs_mail_body__set_content_object
+create function acs_mail_body__set_content_obj (integer,integer) 
 returns integer as '
 declare
     body_id           alias for $1;
@@ -190,7 +188,7 @@ begin
         where body_id = set_content_object.body_id;
     return 1;
 end;
-' language 'pgplsql';
+' language 'plpgsql';
 
 ----
 --create or replace package body acs_mail_multipart
@@ -200,7 +198,7 @@ returns integer as '
 declare
     multipart_id   alias for $1;    -- default null,
     multipart_kind alias for $2;
-    object_type    alias for $3;    -- default 'acs_mail_multipart'
+    object_type    alias for $3;    -- default acs_mail_multipart
     creation_date  alias for $4;    -- default now()
     creation_user  alias for $5;    -- default null
     creation_ip    alias for $6;    -- default null
@@ -219,7 +217,7 @@ begin
         values (v_object_id, multipart_kind);
     return v_object_id;
 end;
-' language 'pgplsql';
+' language 'plpgsql';
 
 create function acs_mail_multipart__delete (integer)
 returns integer as '
@@ -229,10 +227,10 @@ begin
     acs_mail_gc_object__delete(multipart_id);
     return 1;
 end;
-' language 'pgplsql';
+' language 'plpgsql';
 
 create function acs_mail_multipart__multipart_p (integer)
-returns char as '
+returns boolean as '
 declare
     object_id alias for $1;
     v_check_multipart_id integer;
@@ -241,12 +239,12 @@ begin
         from acs_mail_multiparts
         where multipart_id = object_id;
     if v_check_multipart_id <> 0 then
-        return 't';
+        return ''t'';
     else
-        return 'f';
+        return ''f'';
     end if;
 end;
-' language 'pgplsql';
+' language 'plpgsql';
 
  -- Add content at a specific index.  If the sequence number is null,
  -- below one, or higher than the highest item already available,
@@ -271,7 +269,7 @@ begin
     values
          (multipart_id, v_max_num + 1, content_object_id);
 end;
-' language 'pgplsql';
+' language 'plpgsql';
 
 --end acs_mail_multipart;
 
@@ -286,7 +284,7 @@ declare
     creation_date   alias for $4;    -- default now()
     creation_user   alias for $5;    -- default null
     creation_ip     alias for $6;    -- default null
-    object_type     alias for $7;    -- default 'acs_mail_link'
+    object_type     alias for $7;    -- default acs_mail_link
     v_object_id     integer;
  begin
     v_object_id := acs_object__new (
@@ -301,7 +299,7 @@ declare
         values ( v_object_id, body_id );
     return v_object_id;
 end;
-' language 'pgplsql';
+' language 'plpgsql';
 
 create function acs_mail_link__delete (integer)
 returns integer as '
@@ -313,10 +311,10 @@ begin
     acs_object__delete(mail_link_id);
     return 1;
 end;
-' language 'pgplsql';
+' language 'plpgsql';
 
 create function acs_mail_link__link_p (integer)
-returns char as '
+returns boolean as '
 declare
     object_id alias for $1;
     v_check_link_id integer;
@@ -325,12 +323,12 @@ begin
         from acs_mail_links
         where mail_link_id = object_id;
     if v_check_link_id <> 0 then
-        return 't';
+        return ''t'';
     else
-        return 'f';
+        return ''f'';
     end if;
 end; -- link_p
-' language 'pgplsql';
+' language 'plpgsql';
 
 --end acs_mail_link;
 
