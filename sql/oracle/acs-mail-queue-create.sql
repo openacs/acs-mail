@@ -24,13 +24,14 @@ create table acs_mail_queue_messages (
     message_id integer
         constraint acs_mail_queue_ml_id_pk primary key
         constraint acs_mail_queue_ml_id_fk references acs_mail_links
+		on delete cascade
 );
 
 create table acs_mail_queue_incoming (
     message_id integer
         constraint acs_mail_queue_in_mlid_pk primary key
         constraint acs_mail_queue_in_mlid_fk
-            references acs_mail_queue_messages,
+            references acs_mail_queue_messages on delete cascade,
     envelope_from varchar2(4000),
     envelope_to varchar2(4000)
 );
@@ -39,7 +40,7 @@ create table acs_mail_queue_outgoing (
     message_id integer
         constraint acs_mail_queue_out_mlid_pk primary key
         constraint acs_mail_queue_out_mlid_fk
-            references acs_mail_queue_messages,
+            references acs_mail_queue_messages on delete cascade,
     envelope_from varchar2(4000),
     envelope_to varchar2(4000)
 );
@@ -85,7 +86,7 @@ as
  begin
      v_object_id := acs_mail_link.new (
          mail_link_id => mail_link_id,
-	 body_id => body_id,		      
+		 body_id => body_id,		      
          context_id => context_id,
          creation_date => creation_date,
          creation_user => creation_user,
