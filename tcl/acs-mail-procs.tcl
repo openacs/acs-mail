@@ -399,7 +399,13 @@ ad_proc -private acs_mail_process_queue {
 } {
     Process the outgoing message queue.
 } {
-    db_foreach acs_message_send {
+    # Make sure that only one thread is processing the queue at a time.
+    if {[nsv_incr acs_mail process_queue_p] > 1} {
+        nsv_incr acs_mail process_queue_p -1
+        return
+    }
+        
+        db_foreach acs_message_send {
         select message_id, envelope_from, envelope_to
             from acs_mail_queue_outgoing
     } {
