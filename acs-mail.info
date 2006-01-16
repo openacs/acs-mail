@@ -11,7 +11,7 @@
         <owner url="mailto:vinod@kurup.com">Vinod Kurup</owner>
         <owner url="mailto:prevost@maya.com">John Prevost</owner>
         <summary>General messaging system, mark II</summary>
-        <release-date>2006-01-08</release-date>
+        <release-date>2006-01-16</release-date>
         <maturity>3</maturity>
         <vendor url="http://openacs.org">OpenACS</vendor>
 	<license url="http://www.gnu.org/copyleft/gpl.html">GPL</license>
