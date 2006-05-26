@@ -7,11 +7,11 @@
     <initial-install-p>t</initial-install-p>
     <singleton-p>t</singleton-p>
     
-    <version name="5.2.3b2" url="http://openacs.org/repository/download/apm/acs-mail-5.2.3b2.apm">
+    <version name="5.2.3" url="http://openacs.org/repository/download/apm/acs-mail-5.2.3.apm">
         <owner url="mailto:vinod@kurup.com">Vinod Kurup</owner>
         <owner url="mailto:prevost@maya.com">John Prevost</owner>
         <summary>General messaging system, mark II</summary>
-        <release-date>2006-05-03</release-date>
+        <release-date>2006-05-25</release-date>
         <maturity>3</maturity>
         <vendor url="http://openacs.org">OpenACS</vendor>
 	<license url="http://www.gnu.org/copyleft/gpl.html">GPL</license>
@@ -19,7 +19,7 @@
         <description format="text/html">Provides generic message services, with email sending.  The acs-mail-lite package is the prefered 
         interface for new packages and it's anticipated that this package will ultimately be deprecated.</description>
 
-        <provides url="acs-mail" version="5.2.3b2"/>
+        <provides url="acs-mail" version="5.2.3"/>
         <requires url="acs-content-repository" version="5.2.3b1"/>
         <requires url="acs-kernel" version="5.2.3b1"/>
 
