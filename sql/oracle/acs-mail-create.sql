@@ -243,8 +243,8 @@ create index acs_mail_mpp_cr_item_id_idx ON acs_mail_multipart_parts(content_ite
 
 create table acs_mail_links (
     mail_link_id integer
-        constraint acs_mail_links_ml_id_pk primary key
-        constraint acs_mail_links_ml_id_fk references acs_objects 
+        constraint acs_mail_links_mail_links_id_pk primary key
+        constraint acs_mail_links_mail_links_id_fk references acs_objects 
         on delete cascade,
     body_id integer
         constraint acs_mail_links_body_id_nn not null
