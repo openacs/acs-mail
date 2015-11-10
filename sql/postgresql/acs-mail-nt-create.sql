@@ -145,9 +145,18 @@ begin
 
 		for v_header_to_rec in 
 			select email from parties p 
-			where party_id in (select member_id from group_approved_member_map 
-								where group_id = p_party_to) loop
-
+			where party_id in (
+                           SELECT u.user_id
+                           FROM group_member_map m, membership_rels mr, users u 
+                           INNER JOIN (select member_id from group_approved_member_map where group_id = p_party_to) mm
+                           ON u.user_id = mm.member_id
+                           WHERE u.user_id = m.member_id
+                           AND m.group_id in (acs__magic_object_id(''registered_users''::CHARACTER VARYING))
+                           AND m.rel_id = mr.rel_id AND m.container_id = m.group_id
+                           AND m.rel_type::TEXT = ''membership_rel''::TEXT
+                           AND mr.member_state = ''approved''
+                        )
+                loop
 			insert into acs_mail_queue_outgoing
 			( message_id, envelope_from, envelope_to )
 			values
