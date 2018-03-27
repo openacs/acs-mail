@@ -15,7 +15,7 @@
         <vendor url="http://openacs.org">OpenACS</vendor>
 	<license url="http://www.gnu.org/copyleft/gpl.html">GPL</license>
 	<maturity>4</maturity>
-        <description format="text/html">Provides generic message services, with email sending.  The acs-mail-lite package is the prefered 
+        <description format="text/html">Provides generic message services, with email sending.  The acs-mail-lite package is the preferred
         interface for new packages and it's anticipated that this package will ultimately be deprecated.</description>
 
         <provides url="acs-mail" version="5.3.0d2"/>
