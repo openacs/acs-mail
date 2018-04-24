@@ -282,9 +282,7 @@ ad_proc -private acs_mail_encode_content {
 
         if { $multipart_list ne "" } {
             foreach multipart_item $multipart_list {
-                set mime_filename [lindex $multipart_item 0]
-                set mime_disposition [lindex $multipart_item 1]
-                set ci_id [lindex $multipart_item 2]
+                lassign $multipart_item mime_filename mime_disposition ci_id
 
                 if { $mime_disposition eq "" } {
                     if { $mime_filename ne "" } {
