@@ -71,18 +71,11 @@ ad_proc -private acs_mail_set_content {
     {-creation_ip ""}
     {-content:required}
     {-content_type:required}
-    {-nls_language}
-    {-searchable_p}
+    {-nls_language ""}
+    {-searchable_p "f"}
 } {
     Create a cr_item, cr_revision and set it live.  Utility function.
 } {
-    if ![info exists nls_language] {
-        set nls_language [db_null]
-    }
-    if ![info exists searchable_p] {
-        set searchable_p "f"
-    }
-
     set item_id [db_exec_plsql insert_new_content "
         begin
           return content_item__new(
@@ -124,18 +117,11 @@ ad_proc -private acs_mail_set_content_file {
     {-creation_ip ""}
     {-content_file:required}
     {-content_type:required}
-    {-nls_language}
-    {-searchable_p}
+    {-nls_language ""}
+    {-searchable_p "t"}
 } {
     Set the acs_contents info for an object.  Utility function.
 } {
-    if ![info exists nls_language] {
-        set nls_language [db_null]
-    }
-    if ![info exists searchable_p] {
-        set searchable_p "t"
-    }
-
     set item_id [db_exec_plsql insert_new_content "
         begin
           return content_item__new(
