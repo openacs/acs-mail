@@ -761,3 +761,8 @@ ad_page_contract_filter acs_mail_link_id { name value } {
     return 1
 }
 
+# Local variables:
+#    mode: tcl
+#    tcl-indent-level: 4
+#    indent-tabs-mode: nil
+# End:
