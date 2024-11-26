@@ -238,7 +238,7 @@ ad_proc -private acs_mail_encode_content {
                     } else {
                         # binary content - copy the blob to temp file
                         # that we will then uuencode
-                        set file [ns_tmpnam]
+                        set file [ns_mktemp]
                         db_blob_get_file copy_blob_to_file "
                             select r.content, i.storage_type
                             from cr_revisions r, cr_items i
@@ -349,7 +349,7 @@ ad_proc -private acs_mail_body_to_output_format {
             from acs_mail_bodies
             where body_id = :body_id
     }
-    set headers [ns_set new]
+    set headers [ns_set create]
     ns_set put $headers "Message-Id" "<$header_message_id>"
     # taking these out because they are redundant and
     # could conflict with the values in acs_mail_queue_outgoing
